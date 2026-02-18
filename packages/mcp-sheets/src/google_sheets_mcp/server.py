@@ -44,6 +44,113 @@ async def list_tools() -> list[Tool]:
                 "required": ["spreadsheet_id"],
             },
         ),
+        Tool(
+            name="sheets.update_values",
+            description="Update cell values in a spreadsheet.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "spreadsheet_id": {"type": "string", "description": "Spreadsheet ID."},
+                    "range_a1": {"type": "string", "description": "A1 range notation."},
+                    "values": {"type": "array", "items": {"type": "array"}, "description": "2D array of values."},
+                    "value_input_option": {"type": "string", "description": "USER_ENTERED or RAW.", "default": "USER_ENTERED"},
+                },
+                "required": ["spreadsheet_id", "range_a1", "values"],
+            },
+        ),
+        Tool(
+            name="sheets.append_values",
+            description="Append rows to a spreadsheet.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "spreadsheet_id": {"type": "string", "description": "Spreadsheet ID."},
+                    "range_a1": {"type": "string", "description": "A1 range notation."},
+                    "values": {"type": "array", "items": {"type": "array"}, "description": "2D array of values."},
+                    "value_input_option": {"type": "string", "description": "USER_ENTERED or RAW.", "default": "USER_ENTERED"},
+                },
+                "required": ["spreadsheet_id", "range_a1", "values"],
+            },
+        ),
+        Tool(
+            name="sheets.batch_update",
+            description="Execute batch update operations.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "spreadsheet_id": {"type": "string", "description": "Spreadsheet ID."},
+                    "requests": {"type": "array", "items": {"type": "object"}, "description": "Array of update requests."},
+                },
+                "required": ["spreadsheet_id", "requests"],
+            },
+        ),
+        Tool(
+            name="sheets.create_spreadsheet",
+            description="Create a new spreadsheet.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "title": {"type": "string", "description": "Spreadsheet title."},
+                    "sheets": {"type": "array", "items": {"type": "object"}, "description": "Array of sheet definitions."},
+                },
+                "required": ["title"],
+            },
+        ),
+        Tool(
+            name="sheets.add_sheet",
+            description="Add a new sheet to a spreadsheet.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "spreadsheet_id": {"type": "string", "description": "Spreadsheet ID."},
+                    "title": {"type": "string", "description": "Sheet title."},
+                    "row_count": {"type": "integer", "description": "Number of rows.", "default": 1000},
+                    "column_count": {"type": "integer", "description": "Number of columns.", "default": 26},
+                },
+                "required": ["spreadsheet_id", "title"],
+            },
+        ),
+        Tool(
+            name="sheets.delete_sheet",
+            description="Delete a sheet from a spreadsheet.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "spreadsheet_id": {"type": "string", "description": "Spreadsheet ID."},
+                    "sheet_id": {"type": "integer", "description": "Sheet ID to delete."},
+                },
+                "required": ["spreadsheet_id", "sheet_id"],
+            },
+        ),
+        Tool(
+            name="sheets.clear_values",
+            description="Clear cell values in a range.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "spreadsheet_id": {"type": "string", "description": "Spreadsheet ID."},
+                    "range_a1": {"type": "string", "description": "A1 range notation."},
+                },
+                "required": ["spreadsheet_id", "range_a1"],
+            },
+        ),
+        Tool(
+            name="sheets.format_cells",
+            description="Format cells in a range.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "spreadsheet_id": {"type": "string", "description": "Spreadsheet ID."},
+                    "sheet_id": {"type": "integer", "description": "Sheet ID."},
+                    "start_row": {"type": "integer", "description": "Start row index."},
+                    "end_row": {"type": "integer", "description": "End row index."},
+                    "start_col": {"type": "integer", "description": "Start column index."},
+                    "end_col": {"type": "integer", "description": "End column index."},
+                    "format_data": {"type": "object", "description": "Format specification."},
+                },
+                "required": ["spreadsheet_id", "sheet_id", "start_row", "end_row", "start_col", "end_col", "format_data"],
+            },
+        ),
     ]
 
 
@@ -53,6 +160,14 @@ async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent]:
     handlers = {
         "sheets.read_range": svc.read_range,
         "sheets.get_metadata": svc.get_metadata,
+        "sheets.update_values": svc.update_values,
+        "sheets.append_values": svc.append_values,
+        "sheets.batch_update": svc.batch_update,
+        "sheets.create_spreadsheet": svc.create_spreadsheet,
+        "sheets.add_sheet": svc.add_sheet,
+        "sheets.delete_sheet": svc.delete_sheet,
+        "sheets.clear_values": svc.clear_values,
+        "sheets.format_cells": svc.format_cells,
     }
     if name not in handlers:
         return [TextContent(type="text", text=f"Unknown tool: {name}")]

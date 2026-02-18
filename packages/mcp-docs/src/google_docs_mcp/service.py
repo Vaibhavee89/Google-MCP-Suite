@@ -12,6 +12,8 @@ from google_mcp_core.retry import execute_with_retry
 
 READONLY_SCOPES = ["https://www.googleapis.com/auth/documents.readonly"]
 DRIVE_READONLY_SCOPES = ["https://www.googleapis.com/auth/drive.readonly"]
+WRITE_SCOPES = ["https://www.googleapis.com/auth/documents"]
+DRIVE_FILE_SCOPES = ["https://www.googleapis.com/auth/drive.file"]
 
 
 @dataclass
@@ -59,5 +61,187 @@ class DocsService:
             else:
                 text = str(data)
             return {"document_id": document_id, "text": text}
+        except Exception as exc:
+            raise normalize_google_error(exc)
+
+    def create_document(self, title: str) -> Dict[str, Any]:
+        """Create a new Google Doc."""
+        scopes = self._resolve_scopes(WRITE_SCOPES)
+        client = self._docs_client(scopes)
+        try:
+            body = {"title": title}
+            request = client.documents().create(body=body)
+            result = self._execute(request)
+            return {
+                "document_id": result.get("documentId"),
+                "title": result.get("title"),
+                "message": "Document created successfully"
+            }
+        except Exception as exc:
+            raise normalize_google_error(exc)
+
+    def insert_text(self, document_id: str, text: str, index: int = 1) -> Dict[str, Any]:
+        """Insert text at a specific position in the document."""
+        scopes = self._resolve_scopes(WRITE_SCOPES)
+        client = self._docs_client(scopes)
+        try:
+            requests = [{
+                "insertText": {
+                    "location": {"index": index},
+                    "text": text
+                }
+            }]
+            body = {"requests": requests}
+            request = client.documents().batchUpdate(documentId=document_id, body=body)
+            self._execute(request)
+            return {
+                "document_id": document_id,
+                "message": "Text inserted successfully"
+            }
+        except Exception as exc:
+            raise normalize_google_error(exc)
+
+    def delete_text(self, document_id: str, start_index: int, end_index: int) -> Dict[str, Any]:
+        """Delete text from a document."""
+        scopes = self._resolve_scopes(WRITE_SCOPES)
+        client = self._docs_client(scopes)
+        try:
+            requests = [{
+                "deleteContentRange": {
+                    "range": {
+                        "startIndex": start_index,
+                        "endIndex": end_index
+                    }
+                }
+            }]
+            body = {"requests": requests}
+            request = client.documents().batchUpdate(documentId=document_id, body=body)
+            self._execute(request)
+            return {
+                "document_id": document_id,
+                "message": "Text deleted successfully"
+            }
+        except Exception as exc:
+            raise normalize_google_error(exc)
+
+    def replace_text(self, document_id: str, old_text: str, new_text: str) -> Dict[str, Any]:
+        """Replace all occurrences of text in a document."""
+        scopes = self._resolve_scopes(WRITE_SCOPES)
+        client = self._docs_client(scopes)
+        try:
+            requests = [{
+                "replaceAllText": {
+                    "containsText": {
+                        "text": old_text,
+                        "matchCase": True
+                    },
+                    "replaceText": new_text
+                }
+            }]
+            body = {"requests": requests}
+            request = client.documents().batchUpdate(documentId=document_id, body=body)
+            result = self._execute(request)
+            occurrences = result.get("replies", [{}])[0].get("replaceAllText", {}).get("occurrencesChanged", 0)
+            return {
+                "document_id": document_id,
+                "occurrences_changed": occurrences,
+                "message": f"Replaced {occurrences} occurrences"
+            }
+        except Exception as exc:
+            raise normalize_google_error(exc)
+
+    def append_text(self, document_id: str, text: str) -> Dict[str, Any]:
+        """Append text to the end of a document."""
+        scopes = self._resolve_scopes(WRITE_SCOPES)
+        client = self._docs_client(scopes)
+        try:
+            # Get document to find end index
+            doc = self._execute(client.documents().get(documentId=document_id))
+            end_index = doc.get("body", {}).get("content", [{}])[-1].get("endIndex", 1)
+            
+            requests = [{
+                "insertText": {
+                    "location": {"index": end_index - 1},
+                    "text": text
+                }
+            }]
+            body = {"requests": requests}
+            request = client.documents().batchUpdate(documentId=document_id, body=body)
+            self._execute(request)
+            return {
+                "document_id": document_id,
+                "message": "Text appended successfully"
+            }
+        except Exception as exc:
+            raise normalize_google_error(exc)
+
+    def format_text(
+        self,
+        document_id: str,
+        start_index: int,
+        end_index: int,
+        bold: Optional[bool] = None,
+        italic: Optional[bool] = None,
+        underline: Optional[bool] = None,
+        font_size: Optional[int] = None
+    ) -> Dict[str, Any]:
+        """Format text in a document."""
+        scopes = self._resolve_scopes(WRITE_SCOPES)
+        client = self._docs_client(scopes)
+        try:
+            text_style = {}
+            fields = []
+            
+            if bold is not None:
+                text_style["bold"] = bold
+                fields.append("bold")
+            if italic is not None:
+                text_style["italic"] = italic
+                fields.append("italic")
+            if underline is not None:
+                text_style["underline"] = underline
+                fields.append("underline")
+            if font_size is not None:
+                text_style["fontSize"] = {"magnitude": font_size, "unit": "PT"}
+                fields.append("fontSize")
+            
+            requests = [{
+                "updateTextStyle": {
+                    "range": {
+                        "startIndex": start_index,
+                        "endIndex": end_index
+                    },
+                    "textStyle": text_style,
+                    "fields": ",".join(fields)
+                }
+            }]
+            body = {"requests": requests}
+            request = client.documents().batchUpdate(documentId=document_id, body=body)
+            self._execute(request)
+            return {
+                "document_id": document_id,
+                "message": "Text formatted successfully"
+            }
+        except Exception as exc:
+            raise normalize_google_error(exc)
+
+    def insert_image(self, document_id: str, image_url: str, index: int = 1) -> Dict[str, Any]:
+        """Insert an image into a document."""
+        scopes = self._resolve_scopes(WRITE_SCOPES)
+        client = self._docs_client(scopes)
+        try:
+            requests = [{
+                "insertInlineImage": {
+                    "location": {"index": index},
+                    "uri": image_url
+                }
+            }]
+            body = {"requests": requests}
+            request = client.documents().batchUpdate(documentId=document_id, body=body)
+            self._execute(request)
+            return {
+                "document_id": document_id,
+                "message": "Image inserted successfully"
+            }
         except Exception as exc:
             raise normalize_google_error(exc)

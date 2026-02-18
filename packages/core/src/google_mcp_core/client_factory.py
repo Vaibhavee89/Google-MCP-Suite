@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 from typing import Optional
 
 from googleapiclient.discovery import build
+from google.oauth2.credentials import Credentials
 
 from google_mcp_core.auth.manager import AuthManager
 from google_mcp_core.retry import execute_with_retry
@@ -30,3 +31,9 @@ class GoogleClientFactory:
         )
         self.cache[cache_key] = service
         return service
+
+
+def get_google_client(service_name: str, version: str, credentials: Credentials, cache_discovery: bool = False) -> object:
+    return execute_with_retry(
+        lambda: build(service_name, version, credentials=credentials, cache_discovery=cache_discovery)
+    )

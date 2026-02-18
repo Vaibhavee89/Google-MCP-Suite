@@ -102,6 +102,82 @@ async def list_tools() -> list[Tool]:
                 "required": ["name", "confirm"],
             },
         ),
+        Tool(
+            name="drive.upload_file",
+            description="Upload a file to Google Drive.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "name": {"type": "string", "description": "File name."},
+                    "content": {"type": "string", "description": "File content."},
+                    "mime_type": {"type": "string", "description": "MIME type.", "default": "text/plain"},
+                    "parent_id": {"type": "string", "description": "Parent folder ID."},
+                },
+                "required": ["name", "content"],
+            },
+        ),
+        Tool(
+            name="drive.move_file",
+            description="Move a file to a different folder.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "file_id": {"type": "string", "description": "File ID to move."},
+                    "new_parent_id": {"type": "string", "description": "New parent folder ID."},
+                },
+                "required": ["file_id", "new_parent_id"],
+            },
+        ),
+        Tool(
+            name="drive.copy_file",
+            description="Copy a file.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "file_id": {"type": "string", "description": "File ID to copy."},
+                    "new_name": {"type": "string", "description": "New file name."},
+                },
+                "required": ["file_id"],
+            },
+        ),
+        Tool(
+            name="drive.delete_file",
+            description="Delete a file (move to trash).",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "file_id": {"type": "string", "description": "File ID to delete."},
+                },
+                "required": ["file_id"],
+            },
+        ),
+        Tool(
+            name="drive.share_file",
+            description="Share a file with a user.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "file_id": {"type": "string", "description": "File ID to share."},
+                    "email": {"type": "string", "description": "User email address."},
+                    "role": {"type": "string", "description": "Role (reader, writer, commenter).", "default": "reader"},
+                    "send_notification": {"type": "boolean", "description": "Send email notification.", "default": True},
+                },
+                "required": ["file_id", "email"],
+            },
+        ),
+        Tool(
+            name="drive.update_file_metadata",
+            description="Update file metadata (name, description).",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "file_id": {"type": "string", "description": "File ID."},
+                    "name": {"type": "string", "description": "New file name."},
+                    "description": {"type": "string", "description": "New description."},
+                },
+                "required": ["file_id"],
+            },
+        ),
     ]
 
 
@@ -116,6 +192,12 @@ async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent]:
         "drive.list_children": svc.list_children,
         "drive.get_permissions": svc.get_permissions,
         "drive.create_folder": svc.create_folder,
+        "drive.upload_file": svc.upload_file,
+        "drive.move_file": svc.move_file,
+        "drive.copy_file": svc.copy_file,
+        "drive.delete_file": svc.delete_file,
+        "drive.share_file": svc.share_file,
+        "drive.update_file_metadata": svc.update_file_metadata,
     }
     if name not in handlers:
         return [TextContent(type="text", text=f"Unknown tool: {name}")]

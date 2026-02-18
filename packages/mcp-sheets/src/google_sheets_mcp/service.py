@@ -11,6 +11,7 @@ from google_mcp_core.retry import execute_with_retry
 
 
 READONLY_SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
+WRITE_SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 
 
 @dataclass
@@ -69,5 +70,221 @@ class SheetsService:
                 includeGridData=False,
             )
             return self._execute(request)
+        except Exception as exc:
+            raise normalize_google_error(exc)
+
+    def update_values(
+        self,
+        spreadsheet_id: str,
+        range_a1: str,
+        values: list[list[Any]],
+        value_input_option: str = "USER_ENTERED"
+    ) -> Dict[str, Any]:
+        """Update cell values in a spreadsheet."""
+        scopes = self._resolve_scopes(WRITE_SCOPES)
+        client = self._client(scopes)
+        try:
+            body = {"values": values}
+            request = client.spreadsheets().values().update(
+                spreadsheetId=spreadsheet_id,
+                range=range_a1,
+                valueInputOption=value_input_option,
+                body=body
+            )
+            result = self._execute(request)
+            return {
+                "updated_range": result.get("updatedRange"),
+                "updated_rows": result.get("updatedRows"),
+                "updated_columns": result.get("updatedColumns"),
+                "updated_cells": result.get("updatedCells"),
+                "message": "Values updated successfully"
+            }
+        except Exception as exc:
+            raise normalize_google_error(exc)
+
+    def append_values(
+        self,
+        spreadsheet_id: str,
+        range_a1: str,
+        values: list[list[Any]],
+        value_input_option: str = "USER_ENTERED"
+    ) -> Dict[str, Any]:
+        """Append rows to a spreadsheet."""
+        scopes = self._resolve_scopes(WRITE_SCOPES)
+        client = self._client(scopes)
+        try:
+            body = {"values": values}
+            request = client.spreadsheets().values().append(
+                spreadsheetId=spreadsheet_id,
+                range=range_a1,
+                valueInputOption=value_input_option,
+                insertDataOption="INSERT_ROWS",
+                body=body
+            )
+            result = self._execute(request)
+            return {
+                "updated_range": result.get("updates", {}).get("updatedRange"),
+                "updated_rows": result.get("updates", {}).get("updatedRows"),
+                "message": "Values appended successfully"
+            }
+        except Exception as exc:
+            raise normalize_google_error(exc)
+
+    def batch_update(
+        self,
+        spreadsheet_id: str,
+        requests: list[Dict[str, Any]]
+    ) -> Dict[str, Any]:
+        """Execute batch update operations."""
+        scopes = self._resolve_scopes(WRITE_SCOPES)
+        client = self._client(scopes)
+        try:
+            body = {"requests": requests}
+            request = client.spreadsheets().batchUpdate(
+                spreadsheetId=spreadsheet_id,
+                body=body
+            )
+            result = self._execute(request)
+            return {
+                "spreadsheet_id": result.get("spreadsheetId"),
+                "replies": result.get("replies", []),
+                "message": "Batch update completed successfully"
+            }
+        except Exception as exc:
+            raise normalize_google_error(exc)
+
+    def create_spreadsheet(
+        self,
+        title: str,
+        sheets: Optional[list[Dict[str, Any]]] = None
+    ) -> Dict[str, Any]:
+        """Create a new spreadsheet."""
+        scopes = self._resolve_scopes(WRITE_SCOPES)
+        client = self._client(scopes)
+        try:
+            body = {"properties": {"title": title}}
+            if sheets:
+                body["sheets"] = sheets
+            
+            request = client.spreadsheets().create(body=body)
+            result = self._execute(request)
+            return {
+                "spreadsheet_id": result.get("spreadsheetId"),
+                "spreadsheet_url": result.get("spreadsheetUrl"),
+                "title": result.get("properties", {}).get("title"),
+                "message": "Spreadsheet created successfully"
+            }
+        except Exception as exc:
+            raise normalize_google_error(exc)
+
+    def add_sheet(
+        self,
+        spreadsheet_id: str,
+        title: str,
+        row_count: int = 1000,
+        column_count: int = 26
+    ) -> Dict[str, Any]:
+        """Add a new sheet to a spreadsheet."""
+        scopes = self._resolve_scopes(WRITE_SCOPES)
+        client = self._client(scopes)
+        try:
+            requests = [{
+                "addSheet": {
+                    "properties": {
+                        "title": title,
+                        "gridProperties": {
+                            "rowCount": row_count,
+                            "columnCount": column_count
+                        }
+                    }
+                }
+            }]
+            body = {"requests": requests}
+            request = client.spreadsheets().batchUpdate(
+                spreadsheetId=spreadsheet_id,
+                body=body
+            )
+            result = self._execute(request)
+            sheet_id = result.get("replies", [{}])[0].get("addSheet", {}).get("properties", {}).get("sheetId")
+            return {
+                "sheet_id": sheet_id,
+                "title": title,
+                "message": "Sheet added successfully"
+            }
+        except Exception as exc:
+            raise normalize_google_error(exc)
+
+    def delete_sheet(self, spreadsheet_id: str, sheet_id: int) -> Dict[str, Any]:
+        """Delete a sheet from a spreadsheet."""
+        scopes = self._resolve_scopes(WRITE_SCOPES)
+        client = self._client(scopes)
+        try:
+            requests = [{"deleteSheet": {"sheetId": sheet_id}}]
+            body = {"requests": requests}
+            request = client.spreadsheets().batchUpdate(
+                spreadsheetId=spreadsheet_id,
+                body=body
+            )
+            self._execute(request)
+            return {
+                "sheet_id": sheet_id,
+                "message": "Sheet deleted successfully"
+            }
+        except Exception as exc:
+            raise normalize_google_error(exc)
+
+    def clear_values(self, spreadsheet_id: str, range_a1: str) -> Dict[str, Any]:
+        """Clear cell values in a range."""
+        scopes = self._resolve_scopes(WRITE_SCOPES)
+        client = self._client(scopes)
+        try:
+            request = client.spreadsheets().values().clear(
+                spreadsheetId=spreadsheet_id,
+                range=range_a1
+            )
+            result = self._execute(request)
+            return {
+                "cleared_range": result.get("clearedRange"),
+                "message": "Values cleared successfully"
+            }
+        except Exception as exc:
+            raise normalize_google_error(exc)
+
+    def format_cells(
+        self,
+        spreadsheet_id: str,
+        sheet_id: int,
+        start_row: int,
+        end_row: int,
+        start_col: int,
+        end_col: int,
+        format_data: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """Format cells in a range."""
+        scopes = self._resolve_scopes(WRITE_SCOPES)
+        client = self._client(scopes)
+        try:
+            requests = [{
+                "repeatCell": {
+                    "range": {
+                        "sheetId": sheet_id,
+                        "startRowIndex": start_row,
+                        "endRowIndex": end_row,
+                        "startColumnIndex": start_col,
+                        "endColumnIndex": end_col
+                    },
+                    "cell": {"userEnteredFormat": format_data},
+                    "fields": "userEnteredFormat"
+                }
+            }]
+            body = {"requests": requests}
+            request = client.spreadsheets().batchUpdate(
+                spreadsheetId=spreadsheet_id,
+                body=body
+            )
+            self._execute(request)
+            return {
+                "message": "Cells formatted successfully"
+            }
         except Exception as exc:
             raise normalize_google_error(exc)
