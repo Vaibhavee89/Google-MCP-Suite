@@ -1,0 +1,12 @@
+README.md
+pyproject.toml
+src/google_docs_mcp/__init__.py
+src/google_docs_mcp/py.typed
+src/google_docs_mcp/registry.py
+src/google_docs_mcp/server.py
+src/google_docs_mcp/service.py
+src/google_mcp_docs.egg-info/PKG-INFO
+src/google_mcp_docs.egg-info/SOURCES.txt
+src/google_mcp_docs.egg-info/dependency_links.txt
+src/google_mcp_docs.egg-info/requires.txt
+src/google_mcp_docs.egg-info/top_level.txt

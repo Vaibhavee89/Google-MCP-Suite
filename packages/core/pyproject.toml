@@ -1,0 +1,25 @@
+[project]
+name = "google-mcp-core"
+version = "0.1.0"
+description = "Shared core for Google MCP servers."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+keywords = ["mcp", "google", "oauth"]
+dependencies = [
+  "google-auth>=2.0.0",
+  "google-auth-oauthlib>=1.0.0",
+  "google-api-python-client>=2.100.0",
+  "PyYAML>=6.0.0",
+  "mcp>=1.0.0",
+]
+
+[build-system]
+requires = ["setuptools>=68.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.package-data]
+"google_mcp_core" = ["py.typed"]
+
+[tool.setuptools.packages.find]
+where = ["src"]

@@ -1,0 +1,22 @@
+[project]
+name = "google-mcp-gcs"
+version = "0.1.0"
+description = "Google Cloud Storage MCP server."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+keywords = ["mcp", "google", "gcs", "storage"]
+dependencies = [
+  "google-mcp-core",
+  "google-cloud-storage>=2.10.0",
+]
+
+[build-system]
+requires = ["setuptools>=68.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"google_gcs_mcp" = ["py.typed"]

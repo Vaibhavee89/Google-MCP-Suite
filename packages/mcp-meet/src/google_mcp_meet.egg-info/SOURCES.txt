@@ -1,0 +1,12 @@
+README.md
+pyproject.toml
+src/google_mcp_meet.egg-info/PKG-INFO
+src/google_mcp_meet.egg-info/SOURCES.txt
+src/google_mcp_meet.egg-info/dependency_links.txt
+src/google_mcp_meet.egg-info/requires.txt
+src/google_mcp_meet.egg-info/top_level.txt
+src/google_meet_mcp/__init__.py
+src/google_meet_mcp/py.typed
+src/google_meet_mcp/registry.py
+src/google_meet_mcp/server.py
+src/google_meet_mcp/service.py

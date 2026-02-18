@@ -1,0 +1,22 @@
+[project]
+name = "google-mcp-admin-sdk"
+version = "0.1.0"
+description = "Google Admin SDK MCP server."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+keywords = ["mcp", "google", "admin", "directory"]
+dependencies = [
+  "google-mcp-core",
+  "google-api-python-client>=2.100.0",
+]
+
+[build-system]
+requires = ["setuptools>=68.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"google_admin_sdk_mcp" = ["py.typed"]

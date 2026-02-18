@@ -1,0 +1,41 @@
+google:
+  auth_mode: oauth  # oauth | service_account
+  oauth:
+    client_id: "YOUR_CLIENT_ID"
+    client_secret: "YOUR_CLIENT_SECRET"
+    redirect_uri: "http://localhost:3080/gdrive/oauth/callback"
+    token_store: "~/.google-mcp/tokens.json"
+  service_account:
+    keyfile: "~/.google-mcp/service-account.json"
+    subject: "admin@example.com"  # optional DWD subject
+  default_scopes:
+    - "https://www.googleapis.com/auth/drive.metadata.readonly"
+services:
+  drive:
+    enabled: true
+    scopes:
+      - "https://www.googleapis.com/auth/drive.readonly"
+  gmail:
+    enabled: true
+    scopes:
+      - "https://www.googleapis.com/auth/gmail.readonly"
+  calendar:
+    enabled: true
+    scopes:
+      - "https://www.googleapis.com/auth/calendar.readonly"
+  gcs:
+    enabled: true
+    scopes:
+      - "https://www.googleapis.com/auth/devstorage.read_only"
+  meet:
+    enabled: true
+    scopes:
+      - "https://www.googleapis.com/auth/admin.reports.audit.readonly"
+  admin_sdk:
+    enabled: true
+    scopes:
+      - "https://www.googleapis.com/auth/admin.directory.user.readonly"
+  chat:
+    enabled: true
+    scopes:
+      - "https://www.googleapis.com/auth/chat.messages.readonly"

@@ -1,0 +1,18 @@
+Metadata-Version: 2.4
+Name: google-mcp-sheets
+Version: 0.1.0
+Summary: Google Sheets MCP server.
+License: MIT
+Keywords: mcp,google,sheets
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+Requires-Dist: google-mcp-core
+Requires-Dist: google-api-python-client>=2.100.0
+
+# Sheets MCP
+
+MCP server for Google Sheets using `google-mcp-core`.
+
+## Tools
+- sheets.read_range
+- sheets.get_metadata

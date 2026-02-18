@@ -1,0 +1,25 @@
+Metadata-Version: 2.4
+Name: google-mcp-core
+Version: 0.1.0
+Summary: Shared core for Google MCP servers.
+License: MIT
+Keywords: mcp,google,oauth
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+Requires-Dist: google-auth>=2.0.0
+Requires-Dist: google-auth-oauthlib>=1.0.0
+Requires-Dist: google-api-python-client>=2.100.0
+Requires-Dist: PyYAML>=6.0.0
+Requires-Dist: mcp>=1.0.0
+
+# google-mcp-core
+
+Shared core for Google MCP servers.
+
+## Includes
+- Auth managers (OAuth + service accounts)
+- Token storage abstraction
+- API client factory
+- Pagination helpers
+- Error normalization
+- Safety helpers
