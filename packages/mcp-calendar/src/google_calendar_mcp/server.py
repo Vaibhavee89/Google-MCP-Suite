@@ -60,6 +60,10 @@ async def list_tools() -> list[Tool]:
                     "location": {"type": "string", "description": "Event location."},
                     "attendees": {"type": "array", "items": {"type": "string"}, "description": "Attendee emails."},
                     "timezone": {"type": "string", "description": "Timezone.", "default": "UTC"},
+                    "reminders": {
+                        "type": "object",
+                        "description": "Reminder settings. Example: {\"useDefault\": false, \"overrides\": [{\"method\": \"email\", \"minutes\": 30}, {\"method\": \"popup\", \"minutes\": 10}]}"
+                    },
                 },
                 "required": ["summary", "start_time", "end_time"],
             },
@@ -78,6 +82,10 @@ async def list_tools() -> list[Tool]:
                     "description": {"type": "string", "description": "New description."},
                     "location": {"type": "string", "description": "New location."},
                     "timezone": {"type": "string", "description": "Timezone.", "default": "UTC"},
+                    "reminders": {
+                        "type": "object",
+                        "description": "Reminder settings. Example: {\"useDefault\": false, \"overrides\": [{\"method\": \"email\", \"minutes\": 30}, {\"method\": \"popup\", \"minutes\": 10}]}"
+                    },
                 },
                 "required": ["event_id"],
             },
@@ -140,6 +148,24 @@ async def list_tools() -> list[Tool]:
                 "required": ["text"],
             },
         ),
+        Tool(
+            name="calendar.check_freebusy",
+            description="Check free/busy information for calendars to see availability.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "time_min": {"type": "string", "description": "Start time (RFC3339) to check availability."},
+                    "time_max": {"type": "string", "description": "End time (RFC3339) to check availability."},
+                    "calendar_ids": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": "List of calendar IDs to check. Defaults to ['primary']."
+                    },
+                    "timezone": {"type": "string", "description": "Timezone.", "default": "UTC"},
+                },
+                "required": ["time_min", "time_max"],
+            },
+        ),
     ]
 
 
@@ -156,6 +182,7 @@ async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent]:
         "calendar.create_calendar": svc.create_calendar,
         "calendar.add_attendees": svc.add_attendees,
         "calendar.quick_add_event": svc.quick_add_event,
+        "calendar.check_freebusy": svc.check_freebusy,
     }
     if name not in handlers:
         return [TextContent(type="text", text=f"Unknown tool: {name}")]

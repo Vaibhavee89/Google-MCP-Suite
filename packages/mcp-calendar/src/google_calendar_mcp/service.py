@@ -85,7 +85,8 @@ class CalendarService:
         description: Optional[str] = None,
         location: Optional[str] = None,
         attendees: Optional[list[str]] = None,
-        timezone: str = "UTC"
+        timezone: str = "UTC",
+        reminders: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
         """Create a calendar event."""
         scopes = self._resolve_scopes(EVENTS_SCOPES)
@@ -102,7 +103,9 @@ class CalendarService:
                 event["location"] = location
             if attendees:
                 event["attendees"] = [{"email": email} for email in attendees]
-            
+            if reminders:
+                event["reminders"] = reminders
+
             request = client.events().insert(calendarId=calendar_id, body=event)
             result = self._execute(request)
             return {
@@ -125,7 +128,8 @@ class CalendarService:
         end_time: Optional[str] = None,
         description: Optional[str] = None,
         location: Optional[str] = None,
-        timezone: str = "UTC"
+        timezone: str = "UTC",
+        reminders: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
         """Update an existing calendar event."""
         scopes = self._resolve_scopes(EVENTS_SCOPES)
@@ -134,7 +138,7 @@ class CalendarService:
             # Get current event
             request = client.events().get(calendarId=calendar_id, eventId=event_id)
             event = self._execute(request)
-            
+
             # Update fields
             if summary is not None:
                 event["summary"] = summary
@@ -146,7 +150,9 @@ class CalendarService:
                 event["start"] = {"dateTime": start_time, "timeZone": timezone}
             if end_time is not None:
                 event["end"] = {"dateTime": end_time, "timeZone": timezone}
-            
+            if reminders is not None:
+                event["reminders"] = reminders
+
             request = client.events().update(calendarId=calendar_id, eventId=event_id, body=event)
             result = self._execute(request)
             return {
@@ -254,6 +260,47 @@ class CalendarService:
                 "start": result.get("start"),
                 "end": result.get("end"),
                 "message": "Event created successfully"
+            }
+        except Exception as exc:
+            raise normalize_google_error(exc)
+
+    def check_freebusy(
+        self,
+        time_min: str,
+        time_max: str,
+        calendar_ids: Optional[list[str]] = None,
+        timezone: str = "UTC"
+    ) -> Dict[str, Any]:
+        """Check free/busy information for calendars."""
+        scopes = self._resolve_scopes(READONLY_SCOPES)
+        client = self._client(scopes)
+        try:
+            if calendar_ids is None:
+                calendar_ids = ["primary"]
+
+            body = {
+                "timeMin": time_min,
+                "timeMax": time_max,
+                "timeZone": timezone,
+                "items": [{"id": cal_id} for cal_id in calendar_ids]
+            }
+
+            request = client.freebusy().query(body=body)
+            result = self._execute(request)
+
+            calendars_info = {}
+            for cal_id, cal_data in result.get("calendars", {}).items():
+                busy_periods = cal_data.get("busy", [])
+                calendars_info[cal_id] = {
+                    "busy": busy_periods,
+                    "errors": cal_data.get("errors", [])
+                }
+
+            return {
+                "time_min": result.get("timeMin"),
+                "time_max": result.get("timeMax"),
+                "calendars": calendars_info,
+                "message": "Free/busy information retrieved successfully"
             }
         except Exception as exc:
             raise normalize_google_error(exc)

@@ -9,6 +9,8 @@ keywords = ["mcp", "google", "calendar"]
 dependencies = [
   "google-mcp-core",
   "google-api-python-client>=2.100.0",
+  "starlette>=0.27.0",
+  "uvicorn>=0.23.0",
 ]
 
 [build-system]
