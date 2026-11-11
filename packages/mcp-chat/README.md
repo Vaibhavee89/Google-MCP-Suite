@@ -3,5 +3,5 @@
 MCP server for Google Chat.
 
 ## Tools
-- chat.list_spaces
-- chat.search_messages
+- chat_list_spaces
+- chat_search_messages

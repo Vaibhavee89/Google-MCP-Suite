@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import asyncio
 import json
+from functools import lru_cache
 from typing import Any
 
 from mcp.server import Server
@@ -12,7 +14,9 @@ from google_cloudrun_mcp.service import CloudRunService
 app = Server("google-cloudrun-mcp")
 
 
+@lru_cache(maxsize=1)
 def _svc() -> CloudRunService:
+    """One service per process: config is read once and Google clients are reused."""
     return CloudRunService.from_config()
 
 
@@ -20,7 +24,7 @@ def _svc() -> CloudRunService:
 async def list_tools() -> list[Tool]:
     return [
         Tool(
-            name="cloudrun.list_services",
+            name="cloudrun_list_services",
             description="List Cloud Run services.",
             inputSchema={
                 "type": "object",
@@ -30,7 +34,7 @@ async def list_tools() -> list[Tool]:
             },
         ),
         Tool(
-            name="cloudrun.get_service",
+            name="cloudrun_get_service",
             description="Get Cloud Run service details.",
             inputSchema={
                 "type": "object",
@@ -41,7 +45,7 @@ async def list_tools() -> list[Tool]:
             },
         ),
         Tool(
-            name="cloudrun.list_revisions",
+            name="cloudrun_list_revisions",
             description="List Cloud Run service revisions.",
             inputSchema={
                 "type": "object",
@@ -59,17 +63,15 @@ async def list_tools() -> list[Tool]:
 async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent]:
     svc = _svc()
     handlers = {
-        "cloudrun.list_services": svc.list_services,
-        "cloudrun.get_service": svc.get_service,
-        "cloudrun.list_revisions": svc.list_revisions,
+        "cloudrun_list_services": svc.list_services,
+        "cloudrun_get_service": svc.get_service,
+        "cloudrun_list_revisions": svc.list_revisions,
     }
     if name not in handlers:
-        return [TextContent(type="text", text=f"Unknown tool: {name}")]
-    try:
-        result = handlers[name](**arguments)
-        return [TextContent(type="text", text=json.dumps(result, indent=2, default=str))]
-    except Exception as exc:
-        return [TextContent(type="text", text=f"Error: {exc}")]
+        raise ValueError(f"Unknown tool: {name}")
+    # Errors are not caught here: the MCP server turns any exception into an isError result.
+    result = handlers[name](**arguments)
+    return [TextContent(type="text", text=json.dumps(result, indent=2, default=str))]
 
 
 async def main() -> None:
@@ -77,6 +79,10 @@ async def main() -> None:
         await app.run(read_stream, write_stream, app.create_initialization_options())
 
 
-if __name__ == "__main__":
-    import asyncio
+def run() -> None:
+    """Console-script entry point."""
     asyncio.run(main())
+
+
+if __name__ == "__main__":
+    run()

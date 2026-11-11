@@ -13,6 +13,9 @@ dependencies = [
   "uvicorn>=0.23.0",
 ]
 
+[project.scripts]
+google-calendar-mcp = "google_calendar_mcp.server:run"
+
 [build-system]
 requires = ["setuptools>=68.0.0", "wheel"]
 build-backend = "setuptools.build_meta"

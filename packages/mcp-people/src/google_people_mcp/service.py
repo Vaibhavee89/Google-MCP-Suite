@@ -9,6 +9,7 @@ from google_mcp_core.config import AppConfig, load_config
 from google_mcp_core.errors import normalize_google_error
 from google_mcp_core.retry import execute_with_retry
 from google_mcp_core.pagination import paginate_google_api
+from google_mcp_core.safety import require_confirmation
 
 
 READONLY_SCOPES = ["https://www.googleapis.com/auth/contacts.readonly"]
@@ -149,9 +150,11 @@ class PeopleService:
         given_name: str,
         family_name: Optional[str] = None,
         emails: Optional[list[str]] = None,
-        phones: Optional[list[str]] = None
+        phones: Optional[list[str]] = None,
+        confirm: bool = False,
     ) -> Dict[str, Any]:
-        """Create a new contact."""
+        """Create a new contact. Requires confirm=True."""
+        require_confirmation("people_create_contact", confirm)
         scopes = self._resolve_scopes(WRITE_SCOPES)
         client = self._client(scopes)
         try:
@@ -186,9 +189,11 @@ class PeopleService:
         given_name: Optional[str] = None,
         family_name: Optional[str] = None,
         emails: Optional[list[str]] = None,
-        phones: Optional[list[str]] = None
+        phones: Optional[list[str]] = None,
+        confirm: bool = False,
     ) -> Dict[str, Any]:
-        """Update an existing contact."""
+        """Update an existing contact. Requires confirm=True."""
+        require_confirmation("people_update_contact", confirm)
         scopes = self._resolve_scopes(WRITE_SCOPES)
         client = self._client(scopes)
         try:
@@ -238,8 +243,9 @@ class PeopleService:
         except Exception as exc:
             raise normalize_google_error(exc)
 
-    def delete_contact(self, resource_name: str) -> Dict[str, Any]:
-        """Delete a contact."""
+    def delete_contact(self, resource_name: str, confirm: bool = False) -> Dict[str, Any]:
+        """Delete a contact. Requires confirm=True."""
+        require_confirmation("people_delete_contact", confirm, destructive=True)
         scopes = self._resolve_scopes(WRITE_SCOPES)
         client = self._client(scopes)
         try:
@@ -252,8 +258,9 @@ class PeopleService:
         except Exception as exc:
             raise normalize_google_error(exc)
 
-    def batch_create_contacts(self, contacts: list[Dict[str, Any]]) -> Dict[str, Any]:
-        """Batch create multiple contacts."""
+    def batch_create_contacts(self, contacts: list[Dict[str, Any]], confirm: bool = False) -> Dict[str, Any]:
+        """Batch create multiple contacts. Requires confirm=True."""
+        require_confirmation("people_batch_create_contacts", confirm)
         scopes = self._resolve_scopes(WRITE_SCOPES)
         client = self._client(scopes)
         try:
@@ -289,8 +296,9 @@ class PeopleService:
         except Exception as exc:
             raise normalize_google_error(exc)
 
-    def create_contact_group(self, name: str) -> Dict[str, Any]:
-        """Create a new contact group."""
+    def create_contact_group(self, name: str, confirm: bool = False) -> Dict[str, Any]:
+        """Create a new contact group. Requires confirm=True."""
+        require_confirmation("people_create_contact_group", confirm)
         scopes = self._resolve_scopes(WRITE_SCOPES)
         client = self._client(scopes)
         try:
@@ -309,8 +317,9 @@ class PeopleService:
         except Exception as exc:
             raise normalize_google_error(exc)
 
-    def add_contact_to_group(self, group_resource_name: str, contact_resource_name: str) -> Dict[str, Any]:
-        """Add a contact to a group."""
+    def add_contact_to_group(self, group_resource_name: str, contact_resource_name: str, confirm: bool = False) -> Dict[str, Any]:
+        """Add a contact to a group. Requires confirm=True."""
+        require_confirmation("people_add_contact_to_group", confirm)
         scopes = self._resolve_scopes(WRITE_SCOPES)
         client = self._client(scopes)
         try:

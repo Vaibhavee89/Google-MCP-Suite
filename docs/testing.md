@@ -15,7 +15,7 @@
   ```
 - Run a single tool via the package server module, e.g.:
   ```bash
-  python -m google_drive_mcp.server drive.search_files '{"query": "name contains \'Test\'"}'
+  python -m google_drive_mcp.server drive_search_files '{"query": "name contains \'Test\'"}'
   ```
 
 ## Safety

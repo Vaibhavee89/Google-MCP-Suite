@@ -8,6 +8,7 @@ from google_mcp_core.client_factory import GoogleClientFactory
 from google_mcp_core.config import AppConfig, load_config
 from google_mcp_core.errors import normalize_google_error
 from google_mcp_core.retry import execute_with_retry
+from google_mcp_core.safety import require_confirmation, require_writable
 
 
 READONLY_SCOPES = ["https://www.googleapis.com/auth/calendar.readonly"]
@@ -89,6 +90,7 @@ class CalendarService:
         reminders: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
         """Create a calendar event."""
+        require_writable("calendar_create_event")
         scopes = self._resolve_scopes(EVENTS_SCOPES)
         client = self._client(scopes)
         try:
@@ -132,6 +134,7 @@ class CalendarService:
         reminders: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
         """Update an existing calendar event."""
+        require_writable("calendar_update_event")
         scopes = self._resolve_scopes(EVENTS_SCOPES)
         client = self._client(scopes)
         try:
@@ -163,8 +166,9 @@ class CalendarService:
         except Exception as exc:
             raise normalize_google_error(exc)
 
-    def delete_event(self, event_id: str, calendar_id: str = "primary") -> Dict[str, Any]:
-        """Delete a calendar event."""
+    def delete_event(self, event_id: str, calendar_id: str = "primary", confirm: bool = False) -> Dict[str, Any]:
+        """Delete a calendar event. Requires confirm=True."""
+        require_confirmation("calendar_delete_event", confirm, destructive=True)
         scopes = self._resolve_scopes(EVENTS_SCOPES)
         client = self._client(scopes)
         try:
@@ -200,6 +204,7 @@ class CalendarService:
 
     def create_calendar(self, summary: str, description: Optional[str] = None, timezone: str = "UTC") -> Dict[str, Any]:
         """Create a new calendar."""
+        require_writable("calendar_create_calendar")
         scopes = self._resolve_scopes(WRITE_SCOPES)
         client = self._client(scopes)
         try:
@@ -224,9 +229,11 @@ class CalendarService:
         self,
         event_id: str,
         attendees: list[str],
-        calendar_id: str = "primary"
+        calendar_id: str = "primary",
+        confirm: bool = False,
     ) -> Dict[str, Any]:
-        """Add attendees to an existing event."""
+        """Add attendees to an existing event. Requires confirm=True."""
+        require_confirmation("calendar_add_attendees", confirm, destructive=True)
         scopes = self._resolve_scopes(EVENTS_SCOPES)
         client = self._client(scopes)
         try:
@@ -249,6 +256,7 @@ class CalendarService:
 
     def quick_add_event(self, text: str, calendar_id: str = "primary") -> Dict[str, Any]:
         """Quick add event using natural language."""
+        require_writable("calendar_quick_add_event")
         scopes = self._resolve_scopes(EVENTS_SCOPES)
         client = self._client(scopes)
         try:

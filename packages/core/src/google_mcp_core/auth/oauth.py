@@ -3,9 +3,8 @@ from __future__ import annotations
 import http.server
 import socketserver
 import webbrowser
-import warnings
 from typing import Optional
-from urllib.parse import urlparse, parse_qs, urlencode
+from urllib.parse import urlparse, parse_qs
 
 from google_auth_oauthlib.flow import Flow
 from google.oauth2.credentials import Credentials

@@ -11,6 +11,9 @@ dependencies = [
   "google-cloud-storage>=2.10.0",
 ]
 
+[project.scripts]
+google-gcs-mcp = "google_gcs_mcp.server:run"
+
 [build-system]
 requires = ["setuptools>=68.0.0", "wheel"]
 build-backend = "setuptools.build_meta"

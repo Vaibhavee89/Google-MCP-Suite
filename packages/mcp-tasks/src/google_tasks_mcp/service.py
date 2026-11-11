@@ -9,6 +9,7 @@ from google_mcp_core.config import AppConfig, load_config
 from google_mcp_core.errors import normalize_google_error
 from google_mcp_core.retry import execute_with_retry
 from google_mcp_core.pagination import paginate_google_api
+from google_mcp_core.safety import require_confirmation
 
 
 READONLY_SCOPES = ["https://www.googleapis.com/auth/tasks.readonly"]
@@ -104,9 +105,11 @@ class TasksService:
         tasklist_id: str,
         title: str,
         notes: Optional[str] = None,
-        due: Optional[str] = None
+        due: Optional[str] = None,
+        confirm: bool = False,
     ) -> dict[str, Any]:
-        """Create a new task in a task list."""
+        """Create a new task in a task list. Requires confirm=True."""
+        require_confirmation("tasks_create_task", confirm)
         scopes = self._resolve_scopes(WRITE_SCOPES)
         client = self._tasks_client(scopes)
         try:
@@ -134,9 +137,11 @@ class TasksService:
         title: Optional[str] = None,
         notes: Optional[str] = None,
         due: Optional[str] = None,
-        status: Optional[str] = None
+        status: Optional[str] = None,
+        confirm: bool = False,
     ) -> dict[str, Any]:
-        """Update an existing task."""
+        """Update an existing task. Requires confirm=True."""
+        require_confirmation("tasks_update_task", confirm)
         scopes = self._resolve_scopes(WRITE_SCOPES)
         client = self._tasks_client(scopes)
         try:
@@ -165,8 +170,9 @@ class TasksService:
         except Exception as exc:
             raise normalize_google_error(exc)
 
-    def delete_task(self, tasklist_id: str, task_id: str) -> dict[str, Any]:
-        """Delete a task."""
+    def delete_task(self, tasklist_id: str, task_id: str, confirm: bool = False) -> dict[str, Any]:
+        """Delete a task. Requires confirm=True."""
+        require_confirmation("tasks_delete_task", confirm, destructive=True)
         scopes = self._resolve_scopes(WRITE_SCOPES)
         client = self._tasks_client(scopes)
         try:
@@ -180,12 +186,14 @@ class TasksService:
         except Exception as exc:
             raise normalize_google_error(exc)
 
-    def complete_task(self, tasklist_id: str, task_id: str) -> dict[str, Any]:
-        """Mark a task as completed."""
-        return self.update_task(tasklist_id, task_id, status="completed")
+    def complete_task(self, tasklist_id: str, task_id: str, confirm: bool = False) -> dict[str, Any]:
+        """Mark a task as completed. Requires confirm=True."""
+        require_confirmation("tasks_complete_task", confirm)
+        return self.update_task(tasklist_id, task_id, status="completed", confirm=confirm)
 
-    def create_task_list(self, title: str) -> dict[str, Any]:
-        """Create a new task list."""
+    def create_task_list(self, title: str, confirm: bool = False) -> dict[str, Any]:
+        """Create a new task list. Requires confirm=True."""
+        require_confirmation("tasks_create_task_list", confirm)
         scopes = self._resolve_scopes(WRITE_SCOPES)
         client = self._tasks_client(scopes)
         try:
@@ -199,8 +207,9 @@ class TasksService:
         except Exception as exc:
             raise normalize_google_error(exc)
 
-    def delete_task_list(self, tasklist_id: str) -> dict[str, Any]:
-        """Delete a task list."""
+    def delete_task_list(self, tasklist_id: str, confirm: bool = False) -> dict[str, Any]:
+        """Delete a task list. Requires confirm=True."""
+        require_confirmation("tasks_delete_task_list", confirm, destructive=True)
         scopes = self._resolve_scopes(WRITE_SCOPES)
         client = self._tasks_client(scopes)
         try:
@@ -218,9 +227,11 @@ class TasksService:
         tasklist_id: str,
         task_id: str,
         parent: Optional[str] = None,
-        previous: Optional[str] = None
+        previous: Optional[str] = None,
+        confirm: bool = False,
     ) -> dict[str, Any]:
-        """Move a task to a different position."""
+        """Move a task to a different position. Requires confirm=True."""
+        require_confirmation("tasks_move_task", confirm)
         scopes = self._resolve_scopes(WRITE_SCOPES)
         client = self._tasks_client(scopes)
         try:

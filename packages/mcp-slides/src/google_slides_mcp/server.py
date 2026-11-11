@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import asyncio
 import json
+from functools import lru_cache
 from typing import Any
 
 from mcp.server import Server
@@ -12,7 +14,9 @@ from google_slides_mcp.service import SlidesService
 app = Server("google-slides-mcp")
 
 
+@lru_cache(maxsize=1)
 def _svc() -> SlidesService:
+    """One service per process: config is read once and Google clients are reused."""
     return SlidesService.from_config()
 
 
@@ -20,7 +24,7 @@ def _svc() -> SlidesService:
 async def list_tools() -> list[Tool]:
     return [
         Tool(
-            name="slides.get_presentation",
+            name="slides_get_presentation",
             description="Get presentation metadata and structure.",
             inputSchema={
                 "type": "object",
@@ -31,7 +35,7 @@ async def list_tools() -> list[Tool]:
             },
         ),
         Tool(
-            name="slides.get_slide_content",
+            name="slides_get_slide_content",
             description="Get content of a specific slide.",
             inputSchema={
                 "type": "object",
@@ -43,7 +47,7 @@ async def list_tools() -> list[Tool]:
             },
         ),
         Tool(
-            name="slides.list_presentations",
+            name="slides_list_presentations",
             description="List Google Slides presentations from Drive.",
             inputSchema={
                 "type": "object",
@@ -54,7 +58,7 @@ async def list_tools() -> list[Tool]:
             },
         ),
         Tool(
-            name="slides.extract_text",
+            name="slides_extract_text",
             description="Extract all text content from a presentation.",
             inputSchema={
                 "type": "object",
@@ -65,7 +69,7 @@ async def list_tools() -> list[Tool]:
             },
         ),
         Tool(
-            name="slides.create_slide",
+            name="slides_create_slide",
             description="Create a new slide in a presentation.",
             inputSchema={
                 "type": "object",
@@ -79,7 +83,7 @@ async def list_tools() -> list[Tool]:
             },
         ),
         Tool(
-            name="slides.add_text_to_slide",
+            name="slides_add_text_to_slide",
             description="Add a text box to an existing slide.",
             inputSchema={
                 "type": "object",
@@ -96,7 +100,7 @@ async def list_tools() -> list[Tool]:
             },
         ),
         Tool(
-            name="slides.update_text",
+            name="slides_update_text",
             description="Update text in an existing text box or shape.",
             inputSchema={
                 "type": "object",
@@ -109,7 +113,7 @@ async def list_tools() -> list[Tool]:
             },
         ),
         Tool(
-            name="slides.delete_slide",
+            name="slides_delete_slide",
             description="Delete a slide from a presentation.",
             inputSchema={
                 "type": "object",
@@ -121,7 +125,7 @@ async def list_tools() -> list[Tool]:
             },
         ),
         Tool(
-            name="slides.create_presentation",
+            name="slides_create_presentation",
             description="Create a new presentation.",
             inputSchema={
                 "type": "object",
@@ -138,23 +142,21 @@ async def list_tools() -> list[Tool]:
 async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent]:
     svc = _svc()
     handlers = {
-        "slides.get_presentation": svc.get_presentation,
-        "slides.get_slide_content": svc.get_slide_content,
-        "slides.list_presentations": svc.list_presentations,
-        "slides.extract_text": svc.extract_text,
-        "slides.create_slide": svc.create_slide,
-        "slides.add_text_to_slide": svc.add_text_to_slide,
-        "slides.update_text": svc.update_text,
-        "slides.delete_slide": svc.delete_slide,
-        "slides.create_presentation": svc.create_presentation,
+        "slides_get_presentation": svc.get_presentation,
+        "slides_get_slide_content": svc.get_slide_content,
+        "slides_list_presentations": svc.list_presentations,
+        "slides_extract_text": svc.extract_text,
+        "slides_create_slide": svc.create_slide,
+        "slides_add_text_to_slide": svc.add_text_to_slide,
+        "slides_update_text": svc.update_text,
+        "slides_delete_slide": svc.delete_slide,
+        "slides_create_presentation": svc.create_presentation,
     }
     if name not in handlers:
-        return [TextContent(type="text", text=f"Unknown tool: {name}")]
-    try:
-        result = handlers[name](**arguments)
-        return [TextContent(type="text", text=json.dumps(result, indent=2, default=str))]
-    except Exception as exc:
-        return [TextContent(type="text", text=f"Error: {exc}")]
+        raise ValueError(f"Unknown tool: {name}")
+    # Errors are not caught here: the MCP server turns any exception into an isError result.
+    result = handlers[name](**arguments)
+    return [TextContent(type="text", text=json.dumps(result, indent=2, default=str))]
 
 
 async def main() -> None:
@@ -162,6 +164,10 @@ async def main() -> None:
         await app.run(read_stream, write_stream, app.create_initialization_options())
 
 
-if __name__ == "__main__":
-    import asyncio
+def run() -> None:
+    """Console-script entry point."""
     asyncio.run(main())
+
+
+if __name__ == "__main__":
+    run()

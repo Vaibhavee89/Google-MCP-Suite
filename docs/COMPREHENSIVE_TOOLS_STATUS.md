@@ -6,34 +6,34 @@
 **Scopes**: `presentations.readonly`, `presentations`, `drive.file`
 
 **Read Tools**:
-- `slides.get_presentation` - Get presentation metadata
-- `slides.get_slide_content` - Get specific slide content
-- `slides.list_presentations` - List all presentations
-- `slides.extract_text` - Extract all text from presentation
+- `slides_get_presentation` - Get presentation metadata
+- `slides_get_slide_content` - Get specific slide content
+- `slides_list_presentations` - List all presentations
+- `slides_extract_text` - Extract all text from presentation
 
 **Write Tools**:
-- `slides.create_presentation` - Create new presentation
-- `slides.create_slide` - Add new slide to presentation
-- `slides.add_text_to_slide` - Add text box to slide
-- `slides.update_text` - Update text in shape/text box
-- `slides.delete_slide` - Delete a slide
+- `slides_create_presentation` - Create new presentation
+- `slides_create_slide` - Add new slide to presentation
+- `slides_add_text_to_slide` - Add text box to slide
+- `slides_update_text` - Update text in shape/text box
+- `slides_delete_slide` - Delete a slide
 
 ### 2. Google Tasks ✅ (Just Implemented)
 **Scopes**: `tasks.readonly`, `tasks`
 
 **Read Tools**:
-- `tasks.list_task_lists` - List all task lists
-- `tasks.list_tasks` - List tasks in a task list
-- `tasks.get_task` - Get specific task details
+- `tasks_list_task_lists` - List all task lists
+- `tasks_list_tasks` - List tasks in a task list
+- `tasks_get_task` - Get specific task details
 
 **Write Tools**:
-- `tasks.create_task` - Create new task
-- `tasks.update_task` - Update task details
-- `tasks.delete_task` - Delete a task
-- `tasks.complete_task` - Mark task as completed
-- `tasks.create_task_list` - Create new task list
-- `tasks.delete_task_list` - Delete a task list
-- `tasks.move_task` - Move task to different position
+- `tasks_create_task` - Create new task
+- `tasks_update_task` - Update task details
+- `tasks_delete_task` - Delete a task
+- `tasks_complete_task` - Mark task as completed
+- `tasks_create_task_list` - Create new task list
+- `tasks_delete_task_list` - Delete a task list
+- `tasks_move_task` - Move task to different position
 
 ## 🔄 Services with Scopes Updated (Implementation Pending)
 

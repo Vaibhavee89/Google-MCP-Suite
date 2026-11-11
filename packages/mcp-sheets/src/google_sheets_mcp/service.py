@@ -8,6 +8,7 @@ from google_mcp_core.client_factory import GoogleClientFactory
 from google_mcp_core.config import AppConfig, load_config
 from google_mcp_core.errors import normalize_google_error
 from google_mcp_core.retry import execute_with_retry
+from google_mcp_core.safety import require_confirmation
 
 
 READONLY_SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
@@ -78,9 +79,11 @@ class SheetsService:
         spreadsheet_id: str,
         range_a1: str,
         values: list[list[Any]],
-        value_input_option: str = "USER_ENTERED"
+        value_input_option: str = "USER_ENTERED",
+        confirm: bool = False,
     ) -> Dict[str, Any]:
-        """Update cell values in a spreadsheet."""
+        """Update cell values in a spreadsheet. Requires confirm=True."""
+        require_confirmation("sheets_update_values", confirm)
         scopes = self._resolve_scopes(WRITE_SCOPES)
         client = self._client(scopes)
         try:
@@ -107,9 +110,11 @@ class SheetsService:
         spreadsheet_id: str,
         range_a1: str,
         values: list[list[Any]],
-        value_input_option: str = "USER_ENTERED"
+        value_input_option: str = "USER_ENTERED",
+        confirm: bool = False,
     ) -> Dict[str, Any]:
-        """Append rows to a spreadsheet."""
+        """Append rows to a spreadsheet. Requires confirm=True."""
+        require_confirmation("sheets_append_values", confirm)
         scopes = self._resolve_scopes(WRITE_SCOPES)
         client = self._client(scopes)
         try:
@@ -133,9 +138,11 @@ class SheetsService:
     def batch_update(
         self,
         spreadsheet_id: str,
-        requests: list[Dict[str, Any]]
+        requests: list[Dict[str, Any]],
+        confirm: bool = False,
     ) -> Dict[str, Any]:
-        """Execute batch update operations."""
+        """Execute batch update operations. Requires confirm=True."""
+        require_confirmation("sheets_batch_update", confirm, destructive=True)
         scopes = self._resolve_scopes(WRITE_SCOPES)
         client = self._client(scopes)
         try:
@@ -156,9 +163,11 @@ class SheetsService:
     def create_spreadsheet(
         self,
         title: str,
-        sheets: Optional[list[Dict[str, Any]]] = None
+        sheets: Optional[list[Dict[str, Any]]] = None,
+        confirm: bool = False,
     ) -> Dict[str, Any]:
-        """Create a new spreadsheet."""
+        """Create a new spreadsheet. Requires confirm=True."""
+        require_confirmation("sheets_create_spreadsheet", confirm)
         scopes = self._resolve_scopes(WRITE_SCOPES)
         client = self._client(scopes)
         try:
@@ -182,9 +191,11 @@ class SheetsService:
         spreadsheet_id: str,
         title: str,
         row_count: int = 1000,
-        column_count: int = 26
+        column_count: int = 26,
+        confirm: bool = False,
     ) -> Dict[str, Any]:
-        """Add a new sheet to a spreadsheet."""
+        """Add a new sheet to a spreadsheet. Requires confirm=True."""
+        require_confirmation("sheets_add_sheet", confirm)
         scopes = self._resolve_scopes(WRITE_SCOPES)
         client = self._client(scopes)
         try:
@@ -214,8 +225,9 @@ class SheetsService:
         except Exception as exc:
             raise normalize_google_error(exc)
 
-    def delete_sheet(self, spreadsheet_id: str, sheet_id: int) -> Dict[str, Any]:
-        """Delete a sheet from a spreadsheet."""
+    def delete_sheet(self, spreadsheet_id: str, sheet_id: int, confirm: bool = False) -> Dict[str, Any]:
+        """Delete a sheet from a spreadsheet. Requires confirm=True."""
+        require_confirmation("sheets_delete_sheet", confirm, destructive=True)
         scopes = self._resolve_scopes(WRITE_SCOPES)
         client = self._client(scopes)
         try:
@@ -233,8 +245,9 @@ class SheetsService:
         except Exception as exc:
             raise normalize_google_error(exc)
 
-    def clear_values(self, spreadsheet_id: str, range_a1: str) -> Dict[str, Any]:
-        """Clear cell values in a range."""
+    def clear_values(self, spreadsheet_id: str, range_a1: str, confirm: bool = False) -> Dict[str, Any]:
+        """Clear cell values in a range. Requires confirm=True."""
+        require_confirmation("sheets_clear_values", confirm, destructive=True)
         scopes = self._resolve_scopes(WRITE_SCOPES)
         client = self._client(scopes)
         try:
@@ -258,9 +271,11 @@ class SheetsService:
         end_row: int,
         start_col: int,
         end_col: int,
-        format_data: Dict[str, Any]
+        format_data: Dict[str, Any],
+        confirm: bool = False,
     ) -> Dict[str, Any]:
-        """Format cells in a range."""
+        """Format cells in a range. Requires confirm=True."""
+        require_confirmation("sheets_format_cells", confirm)
         scopes = self._resolve_scopes(WRITE_SCOPES)
         client = self._client(scopes)
         try:

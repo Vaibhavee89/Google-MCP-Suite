@@ -35,7 +35,7 @@ def main():
         
         if creds and creds.valid:
             print("✅ Authentication successful!")
-            print(f"\n🎉 Token saved to: ~/.google-mcp/tokens.json")
+            print("\n🎉 Token saved to: ~/.google-mcp/tokens.json")
             print("\nYou can now use all MCP servers with Claude Code!")
             print("\nServices authenticated:")
             for service in services:

@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: packages/core/pyproject.toml
+
+      - name: Install
+        # The servers use the mcp 1.x decorator API, so mcp is pinned below 2.
+        # Service packages are put on PYTHONPATH (next step) instead of pip-installed.
+        run: python -m pip install -e packages/core "mcp<2" pytest ruff==0.17.4
+
+      - name: Ruff
+        run: ruff check .
+
+      - name: Pytest
+        run: |
+          export PYTHONPATH="$(ls -d "$PWD"/packages/mcp-*/src | paste -sd: -)"
+          python -m pytest packages/core/tests -q

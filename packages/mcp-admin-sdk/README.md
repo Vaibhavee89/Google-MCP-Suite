@@ -3,5 +3,5 @@
 MCP server for Google Admin SDK Directory API.
 
 ## Tools
-- admin.list_users
-- admin.get_user
+- admin_list_users
+- admin_get_user

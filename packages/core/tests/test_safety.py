@@ -3,7 +3,14 @@ import pytest
 from google_mcp_core.auth.manager import AuthManager
 from google_mcp_core.config import AppConfig, GoogleConfig, OAuthConfig, ServiceAccountConfig
 from google_mcp_core.errors import MCPError
-from google_mcp_core.safety import ALLOW_WRITES_ENV, ScopeGuard, require_confirmation
+from google_mcp_core.safety import (
+    ALLOW_WRITES_ENV,
+    READ_ONLY_ENV,
+    ScopeGuard,
+    read_only,
+    require_confirmation,
+    require_writable,
+)
 
 
 def _config(allowed):
@@ -58,3 +65,25 @@ def test_destructive_requires_server_switch(monkeypatch):
 def test_non_destructive_ignores_switch(monkeypatch):
     monkeypatch.delenv(ALLOW_WRITES_ENV, raising=False)
     require_confirmation("x", True)
+
+
+def test_read_only_blocks_everything(monkeypatch):
+    monkeypatch.setenv(READ_ONLY_ENV, "1")
+    monkeypatch.setenv(ALLOW_WRITES_ENV, "1")
+    assert read_only()
+    with pytest.raises(MCPError) as exc:
+        require_writable("x")
+    assert exc.value.code == "read_only"
+    # even a confirmed, destructive-enabled call is refused
+    for destructive in (False, True):
+        with pytest.raises(MCPError) as exc:
+            require_confirmation("x", True, destructive=destructive)
+        assert exc.value.code == "read_only"
+
+
+def test_read_only_off_by_default(monkeypatch):
+    monkeypatch.delenv(READ_ONLY_ENV, raising=False)
+    assert not read_only()
+    require_writable("x")
+    monkeypatch.setenv(READ_ONLY_ENV, "0")
+    require_writable("x")

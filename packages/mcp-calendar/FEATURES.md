@@ -23,7 +23,7 @@ All requested features have been implemented and are ready to use!
 ### 2. List Calendars ✅
 **Status:** Fully Implemented
 
-**Tool:** `calendar.list_calendars`
+**Tool:** `calendar_list_calendars`
 
 **Capabilities:**
 - List all accessible calendars
@@ -34,7 +34,7 @@ All requested features have been implemented and are ready to use!
 **Example:**
 ```json
 {
-  "tool": "calendar.list_calendars"
+  "tool": "calendar_list_calendars"
 }
 ```
 
@@ -50,7 +50,7 @@ All requested features have been implemented and are ready to use!
 ### 3. List/Search Events ✅
 **Status:** Fully Implemented
 
-**Tool:** `calendar.search_events`
+**Tool:** `calendar_search_events`
 
 **Capabilities:**
 - Free-text search across events
@@ -63,7 +63,7 @@ All requested features have been implemented and are ready to use!
 **Example:**
 ```json
 {
-  "tool": "calendar.search_events",
+  "tool": "calendar_search_events",
   "query": "meeting",
   "time_min": "2024-03-20T00:00:00Z",
   "time_max": "2024-03-21T00:00:00Z",
@@ -84,7 +84,7 @@ All requested features have been implemented and are ready to use!
 ### 4. Create Events ✅
 **Status:** Fully Implemented with Enhancements
 
-**Tool:** `calendar.create_event`
+**Tool:** `calendar_create_event`
 
 **Capabilities:**
 - Create events with title, time, location
@@ -98,7 +98,7 @@ All requested features have been implemented and are ready to use!
 **Example:**
 ```json
 {
-  "tool": "calendar.create_event",
+  "tool": "calendar_create_event",
   "summary": "Team Meeting",
   "start_time": "2024-03-20T10:00:00Z",
   "end_time": "2024-03-20T11:00:00Z",
@@ -131,7 +131,7 @@ All requested features have been implemented and are ready to use!
 ### 5. Update Events ✅
 **Status:** Fully Implemented with Enhancements
 
-**Tool:** `calendar.update_event`
+**Tool:** `calendar_update_event`
 
 **Capabilities:**
 - Update title, description, location
@@ -144,7 +144,7 @@ All requested features have been implemented and are ready to use!
 **Example:**
 ```json
 {
-  "tool": "calendar.update_event",
+  "tool": "calendar_update_event",
   "event_id": "event123",
   "summary": "Updated Meeting Title",
   "reminders": {
@@ -161,7 +161,7 @@ All requested features have been implemented and are ready to use!
 ### 6. Delete Events ✅
 **Status:** Fully Implemented
 
-**Tool:** `calendar.delete_event`
+**Tool:** `calendar_delete_event`
 
 **Capabilities:**
 - Delete events by ID
@@ -172,7 +172,7 @@ All requested features have been implemented and are ready to use!
 **Example:**
 ```json
 {
-  "tool": "calendar.delete_event",
+  "tool": "calendar_delete_event",
   "event_id": "event123",
   "calendar_id": "primary"
 }
@@ -183,7 +183,7 @@ All requested features have been implemented and are ready to use!
 ### 7. Check Availability / Free-Busy ✅
 **Status:** Fully Implemented
 
-**Tool:** `calendar.check_freebusy`
+**Tool:** `calendar_check_freebusy`
 
 **Capabilities:**
 - Check availability across multiple calendars
@@ -196,7 +196,7 @@ All requested features have been implemented and are ready to use!
 **Example:**
 ```json
 {
-  "tool": "calendar.check_freebusy",
+  "tool": "calendar_check_freebusy",
   "time_min": "2024-03-20T09:00:00Z",
   "time_max": "2024-03-20T17:00:00Z",
   "calendar_ids": ["primary", "team@example.com"],
@@ -266,7 +266,7 @@ All requested features have been implemented and are ready to use!
 ### 9. Invite Attendees ✅
 **Status:** Fully Implemented
 
-**Tool:** `calendar.add_attendees`
+**Tool:** `calendar_add_attendees`
 
 **Capabilities:**
 - Add attendees to existing events
@@ -278,22 +278,22 @@ All requested features have been implemented and are ready to use!
 **Example:**
 ```json
 {
-  "tool": "calendar.add_attendees",
+  "tool": "calendar_add_attendees",
   "event_id": "event123",
   "attendees": ["newperson@example.com", "another@example.com"]
 }
 ```
 
 **Also integrated in:**
-- `calendar.create_event` (set attendees on creation)
-- `calendar.update_event` (modify attendee list)
+- `calendar_create_event` (set attendees on creation)
+- `calendar_update_event` (modify attendee list)
 
 ---
 
 ### 10. Search Events ✅
 **Status:** Fully Implemented
 
-**Tool:** `calendar.search_events`
+**Tool:** `calendar_search_events`
 
 **Capabilities:**
 - Full-text search across event content
@@ -306,7 +306,7 @@ All requested features have been implemented and are ready to use!
 **Example:**
 ```json
 {
-  "tool": "calendar.search_events",
+  "tool": "calendar_search_events",
   "query": "project review",
   "time_min": "2024-03-01T00:00:00Z",
   "time_max": "2024-03-31T23:59:59Z"
@@ -318,7 +318,7 @@ All requested features have been implemented and are ready to use!
 ### 11. Quick Add (Natural Language) ✅
 **Status:** Fully Implemented (Bonus Feature)
 
-**Tool:** `calendar.quick_add_event`
+**Tool:** `calendar_quick_add_event`
 
 **Capabilities:**
 - Create events using natural language
@@ -376,7 +376,7 @@ Connect clients to: `http://localhost:8000/mcp`
 ### 13. Calendar Management ✅
 **Status:** Fully Implemented (Bonus Feature)
 
-**Tool:** `calendar.create_calendar`
+**Tool:** `calendar_create_calendar`
 
 **Capabilities:**
 - Create new calendars
@@ -387,7 +387,7 @@ Connect clients to: `http://localhost:8000/mcp`
 **Example:**
 ```json
 {
-  "tool": "calendar.create_calendar",
+  "tool": "calendar_create_calendar",
   "summary": "Project Calendar",
   "description": "Track project milestones",
   "timezone": "America/New_York"

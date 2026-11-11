@@ -1,6 +1,6 @@
 [build-system]
 requires = ["setuptools>=61.0"]
-build-backend = "setuptools.build_backend"
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "google-slides-mcp"
@@ -8,6 +8,9 @@ version = "0.1.0"
 dependencies = [
   "google-mcp-core>=0.1.0",
 ]
+
+[project.scripts]
+google-slides-mcp = "google_slides_mcp.server:run"
 
 [project.optional-dependencies]
 dev = [

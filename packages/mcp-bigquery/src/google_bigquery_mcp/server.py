@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import asyncio
 import json
+from functools import lru_cache
 from typing import Any
 
 from mcp.server import Server
@@ -12,7 +14,9 @@ from google_bigquery_mcp.service import BigQueryService
 app = Server("google-bigquery-mcp")
 
 
+@lru_cache(maxsize=1)
 def _svc() -> BigQueryService:
+    """One service per process: config is read once and Google clients are reused."""
     return BigQueryService.from_config()
 
 
@@ -20,7 +24,7 @@ def _svc() -> BigQueryService:
 async def list_tools() -> list[Tool]:
     return [
         Tool(
-            name="bigquery.list_datasets",
+            name="bigquery_list_datasets",
             description="List BigQuery datasets.",
             inputSchema={
                 "type": "object",
@@ -30,7 +34,7 @@ async def list_tools() -> list[Tool]:
             },
         ),
         Tool(
-            name="bigquery.list_tables",
+            name="bigquery_list_tables",
             description="List tables in a dataset.",
             inputSchema={
                 "type": "object",
@@ -42,7 +46,7 @@ async def list_tools() -> list[Tool]:
             },
         ),
         Tool(
-            name="bigquery.get_table_schema",
+            name="bigquery_get_table_schema",
             description="Get table schema and metadata.",
             inputSchema={
                 "type": "object",
@@ -54,7 +58,7 @@ async def list_tools() -> list[Tool]:
             },
         ),
         Tool(
-            name="bigquery.query",
+            name="bigquery_query",
             description="Execute a BigQuery SQL query (read-only).",
             inputSchema={
                 "type": "object",
@@ -66,7 +70,7 @@ async def list_tools() -> list[Tool]:
             },
         ),
         Tool(
-            name="bigquery.list_jobs",
+            name="bigquery_list_jobs",
             description="List recent BigQuery jobs.",
             inputSchema={
                 "type": "object",
@@ -82,19 +86,17 @@ async def list_tools() -> list[Tool]:
 async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent]:
     svc = _svc()
     handlers = {
-        "bigquery.list_datasets": svc.list_datasets,
-        "bigquery.list_tables": svc.list_tables,
-        "bigquery.get_table_schema": svc.get_table_schema,
-        "bigquery.query": svc.query,
-        "bigquery.list_jobs": svc.list_jobs,
+        "bigquery_list_datasets": svc.list_datasets,
+        "bigquery_list_tables": svc.list_tables,
+        "bigquery_get_table_schema": svc.get_table_schema,
+        "bigquery_query": svc.query,
+        "bigquery_list_jobs": svc.list_jobs,
     }
     if name not in handlers:
-        return [TextContent(type="text", text=f"Unknown tool: {name}")]
-    try:
-        result = handlers[name](**arguments)
-        return [TextContent(type="text", text=json.dumps(result, indent=2, default=str))]
-    except Exception as exc:
-        return [TextContent(type="text", text=f"Error: {exc}")]
+        raise ValueError(f"Unknown tool: {name}")
+    # Errors are not caught here: the MCP server turns any exception into an isError result.
+    result = handlers[name](**arguments)
+    return [TextContent(type="text", text=json.dumps(result, indent=2, default=str))]
 
 
 async def main() -> None:
@@ -102,6 +104,10 @@ async def main() -> None:
         await app.run(read_stream, write_stream, app.create_initialization_options())
 
 
-if __name__ == "__main__":
-    import asyncio
+def run() -> None:
+    """Console-script entry point."""
     asyncio.run(main())
+
+
+if __name__ == "__main__":
+    run()

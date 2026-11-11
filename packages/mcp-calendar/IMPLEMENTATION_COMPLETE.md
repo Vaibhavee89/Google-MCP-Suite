@@ -94,16 +94,16 @@ Expected output:
 
 | # | Tool Name | Description | Status |
 |---|-----------|-------------|--------|
-| 1 | `calendar.search_events` | Search events with filters | ✅ |
-| 2 | `calendar.get_event` | Get event by ID | ✅ |
-| 3 | `calendar.create_event` | Create new event | ✅ |
-| 4 | `calendar.update_event` | Update existing event | ✅ |
-| 5 | `calendar.delete_event` | Delete event | ✅ |
-| 6 | `calendar.list_calendars` | List all calendars | ✅ |
-| 7 | `calendar.create_calendar` | Create new calendar | ✅ |
-| 8 | `calendar.add_attendees` | Add attendees to event | ✅ |
-| 9 | `calendar.quick_add_event` | Natural language add | ✅ |
-| 10 | `calendar.check_freebusy` | Check availability | ✅ |
+| 1 | `calendar_search_events` | Search events with filters | ✅ |
+| 2 | `calendar_get_event` | Get event by ID | ✅ |
+| 3 | `calendar_create_event` | Create new event | ✅ |
+| 4 | `calendar_update_event` | Update existing event | ✅ |
+| 5 | `calendar_delete_event` | Delete event | ✅ |
+| 6 | `calendar_list_calendars` | List all calendars | ✅ |
+| 7 | `calendar_create_calendar` | Create new calendar | ✅ |
+| 8 | `calendar_add_attendees` | Add attendees to event | ✅ |
+| 9 | `calendar_quick_add_event` | Natural language add | ✅ |
+| 10 | `calendar_check_freebusy` | Check availability | ✅ |
 
 ---
 
@@ -316,7 +316,7 @@ curl http://localhost:8000/mcp
 
 ```json
 {
-  "tool": "calendar.create_event",
+  "tool": "calendar_create_event",
   "arguments": {
     "summary": "Team Meeting",
     "start_time": "2024-03-20T10:00:00Z",
@@ -339,7 +339,7 @@ curl http://localhost:8000/mcp
 
 ```json
 {
-  "tool": "calendar.check_freebusy",
+  "tool": "calendar_check_freebusy",
   "arguments": {
     "time_min": "2024-03-20T09:00:00Z",
     "time_max": "2024-03-20T17:00:00Z",
@@ -352,7 +352,7 @@ curl http://localhost:8000/mcp
 
 ```json
 {
-  "tool": "calendar.quick_add_event",
+  "tool": "calendar_quick_add_event",
   "arguments": {
     "text": "Lunch with John tomorrow at 1pm for 1 hour"
   }

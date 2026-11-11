@@ -263,55 +263,55 @@ Each server will start and wait for MCP protocol messages via stdin/stdout.
 ## 🎯 Available Tools by Service
 
 ### Google Slides
-- `slides.get_presentation` - Get presentation metadata
+- `slides_get_presentation` - Get presentation metadata
 - `slides.get_slide` - Get specific slide content
-- `slides.list_presentations` - List all presentations
-- `slides.extract_text` - Extract all text from a presentation
+- `slides_list_presentations` - List all presentations
+- `slides_extract_text` - Extract all text from a presentation
 
 ### Google Forms
-- `forms.get_form` - Get form metadata and structure
-- `forms.list_responses` - List form responses
-- `forms.get_response` - Get a specific form response
+- `forms_get_form` - Get form metadata and structure
+- `forms_list_responses` - List form responses
+- `forms_get_response` - Get a specific form response
 
 ### Google Tasks
-- `tasks.list_task_lists` - List all task lists
-- `tasks.list_tasks` - List tasks in a task list
-- `tasks.get_task` - Get a specific task
+- `tasks_list_task_lists` - List all task lists
+- `tasks_list_tasks` - List tasks in a task list
+- `tasks_get_task` - Get a specific task
 
 ### People API/Contacts
-- `people.list_contacts` - List contacts
-- `people.get_contact` - Get detailed contact information
-- `people.search_contacts` - Search contacts by name, email, or phone
+- `people_list_contacts` - List contacts
+- `people_get_contact` - Get detailed contact information
+- `people_search_contacts` - Search contacts by name, email, or phone
 
 ### BigQuery
-- `bigquery.list_datasets` - List BigQuery datasets
-- `bigquery.list_tables` - List tables in a dataset
-- `bigquery.get_table_schema` - Get table schema and metadata
-- `bigquery.query` - Execute a SQL query (read-only)
-- `bigquery.list_jobs` - List recent BigQuery jobs
+- `bigquery_list_datasets` - List BigQuery datasets
+- `bigquery_list_tables` - List tables in a dataset
+- `bigquery_get_table_schema` - Get table schema and metadata
+- `bigquery_query` - Execute a SQL query (read-only)
+- `bigquery_list_jobs` - List recent BigQuery jobs
 
 ### Cloud Logging
-- `cloudlogging.list_logs` - List recent log entries
-- `cloudlogging.query_logs` - Query logs with a filter expression
-- `cloudlogging.get_log_metrics` - List log-based metrics
+- `cloudlogging_list_logs` - List recent log entries
+- `cloudlogging_query_logs` - Query logs with a filter expression
+- `cloudlogging_get_log_metrics` - List log-based metrics
 
 ### Pub/Sub
-- `pubsub.list_topics` - List Pub/Sub topics
-- `pubsub.get_topic` - Get topic details
-- `pubsub.list_subscriptions` - List Pub/Sub subscriptions
-- `pubsub.get_subscription` - Get subscription details
+- `pubsub_list_topics` - List Pub/Sub topics
+- `pubsub_get_topic` - Get topic details
+- `pubsub_list_subscriptions` - List Pub/Sub subscriptions
+- `pubsub_get_subscription` - Get subscription details
 
 ### Cloud Run
-- `cloudrun.list_services` - List Cloud Run services
-- `cloudrun.get_service` - Get service details
-- `cloudrun.list_revisions` - List service revisions
+- `cloudrun_list_services` - List Cloud Run services
+- `cloudrun_get_service` - Get service details
+- `cloudrun_list_revisions` - List service revisions
 
 ### Vertex AI
-- `vertexai.list_models` - List Vertex AI models
-- `vertexai.get_model` - Get model details
-- `vertexai.list_endpoints` - List Vertex AI endpoints
-- `vertexai.get_endpoint` - Get endpoint details
-- `vertexai.list_datasets` - List Vertex AI datasets
+- `vertexai_list_models` - List Vertex AI models
+- `vertexai_get_model` - Get model details
+- `vertexai_list_endpoints` - List Vertex AI endpoints
+- `vertexai_get_endpoint` - Get endpoint details
+- `vertexai_list_datasets` - List Vertex AI datasets
 
 ---
 

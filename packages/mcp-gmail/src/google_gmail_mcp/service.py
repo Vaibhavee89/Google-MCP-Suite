@@ -11,7 +11,7 @@ from google_mcp_core.client_factory import GoogleClientFactory
 from google_mcp_core.config import AppConfig, load_config
 from google_mcp_core.errors import normalize_google_error
 from google_mcp_core.retry import execute_with_retry
-from google_mcp_core.safety import require_confirmation
+from google_mcp_core.safety import require_confirmation, require_writable
 
 
 READONLY_SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"]
@@ -84,7 +84,7 @@ class GmailService:
         confirm: bool = False,
     ) -> Dict[str, Any]:
         """Send an email. Requires confirm=True."""
-        require_confirmation("gmail.send_email", confirm, destructive=True)
+        require_confirmation("gmail_send_email", confirm, destructive=True)
         scopes = self._resolve_scopes(SEND_SCOPES)
         client = self._client(scopes)
         try:
@@ -122,6 +122,7 @@ class GmailService:
         html: bool = False
     ) -> Dict[str, Any]:
         """Create a draft email."""
+        require_writable("gmail_create_draft")
         scopes = self._resolve_scopes(COMPOSE_SCOPES)
         client = self._client(scopes)
         try:
@@ -155,7 +156,7 @@ class GmailService:
         confirm: bool = False,
     ) -> Dict[str, Any]:
         """Reply to an email message. Requires confirm=True."""
-        require_confirmation("gmail.reply_to_message", confirm, destructive=True)
+        require_confirmation("gmail_reply_to_message", confirm, destructive=True)
         scopes = self._resolve_scopes(list(dict.fromkeys(READONLY_SCOPES + SEND_SCOPES)))
         client = self._client(scopes)
         try:
@@ -192,6 +193,7 @@ class GmailService:
         remove_labels: Optional[list[str]] = None
     ) -> Dict[str, Any]:
         """Add or remove labels from a message."""
+        require_writable("gmail_modify_labels")
         scopes = self._resolve_scopes(MODIFY_SCOPES)
         client = self._client(scopes)
         try:
@@ -215,8 +217,9 @@ class GmailService:
         except Exception as exc:
             raise normalize_google_error(exc)
 
-    def trash_message(self, message_id: str) -> Dict[str, Any]:
-        """Move a message to trash."""
+    def trash_message(self, message_id: str, confirm: bool = False) -> Dict[str, Any]:
+        """Move a message to trash. Requires confirm=True."""
+        require_confirmation("gmail_trash_message", confirm, destructive=True)
         scopes = self._resolve_scopes(MODIFY_SCOPES)
         client = self._client(scopes)
         try:
@@ -231,7 +234,7 @@ class GmailService:
 
     def delete_message(self, message_id: str, confirm: bool = False) -> Dict[str, Any]:
         """Permanently delete a message. Requires confirm=True."""
-        require_confirmation("gmail.delete_message", confirm, destructive=True)
+        require_confirmation("gmail_delete_message", confirm, destructive=True)
         scopes = self._resolve_scopes(MODIFY_SCOPES)
         client = self._client(scopes)
         try:
@@ -274,6 +277,7 @@ class GmailService:
 
     def create_label(self, name: str, label_list_visibility: str = "labelShow", message_list_visibility: str = "show") -> Dict[str, Any]:
         """Create a new label."""
+        require_writable("gmail_create_label")
         scopes = self._resolve_scopes(MODIFY_SCOPES)
         client = self._client(scopes)
         try:

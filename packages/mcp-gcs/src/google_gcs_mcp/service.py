@@ -7,7 +7,6 @@ from typing import Any, Dict, Optional
 from google.cloud import storage
 
 from google_mcp_core.auth.manager import AuthManager
-from google_mcp_core.client_factory import GoogleClientFactory
 from google_mcp_core.config import AppConfig, load_config
 from google_mcp_core.errors import MCPError, normalize_google_error
 

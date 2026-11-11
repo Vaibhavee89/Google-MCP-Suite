@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import asyncio
 import json
+from functools import lru_cache
 from typing import Any
 
 from mcp.server import Server
@@ -12,7 +14,9 @@ from google_cloudlogging_mcp.service import CloudLoggingService
 app = Server("google-cloudlogging-mcp")
 
 
+@lru_cache(maxsize=1)
 def _svc() -> CloudLoggingService:
+    """One service per process: config is read once and Google clients are reused."""
     return CloudLoggingService.from_config()
 
 
@@ -20,7 +24,7 @@ def _svc() -> CloudLoggingService:
 async def list_tools() -> list[Tool]:
     return [
         Tool(
-            name="cloudlogging.list_logs",
+            name="cloudlogging_list_logs",
             description="List recent log entries.",
             inputSchema={
                 "type": "object",
@@ -30,7 +34,7 @@ async def list_tools() -> list[Tool]:
             },
         ),
         Tool(
-            name="cloudlogging.query_logs",
+            name="cloudlogging_query_logs",
             description="Query logs with a filter expression.",
             inputSchema={
                 "type": "object",
@@ -42,7 +46,7 @@ async def list_tools() -> list[Tool]:
             },
         ),
         Tool(
-            name="cloudlogging.get_log_metrics",
+            name="cloudlogging_get_log_metrics",
             description="List log-based metrics.",
             inputSchema={
                 "type": "object",
@@ -56,17 +60,15 @@ async def list_tools() -> list[Tool]:
 async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent]:
     svc = _svc()
     handlers = {
-        "cloudlogging.list_logs": svc.list_logs,
-        "cloudlogging.query_logs": svc.query_logs,
-        "cloudlogging.get_log_metrics": svc.get_log_metrics,
+        "cloudlogging_list_logs": svc.list_logs,
+        "cloudlogging_query_logs": svc.query_logs,
+        "cloudlogging_get_log_metrics": svc.get_log_metrics,
     }
     if name not in handlers:
-        return [TextContent(type="text", text=f"Unknown tool: {name}")]
-    try:
-        result = handlers[name](**arguments)
-        return [TextContent(type="text", text=json.dumps(result, indent=2, default=str))]
-    except Exception as exc:
-        return [TextContent(type="text", text=f"Error: {exc}")]
+        raise ValueError(f"Unknown tool: {name}")
+    # Errors are not caught here: the MCP server turns any exception into an isError result.
+    result = handlers[name](**arguments)
+    return [TextContent(type="text", text=json.dumps(result, indent=2, default=str))]
 
 
 async def main() -> None:
@@ -74,6 +76,10 @@ async def main() -> None:
         await app.run(read_stream, write_stream, app.create_initialization_options())
 
 
-if __name__ == "__main__":
-    import asyncio
+def run() -> None:
+    """Console-script entry point."""
     asyncio.run(main())
+
+
+if __name__ == "__main__":
+    run()

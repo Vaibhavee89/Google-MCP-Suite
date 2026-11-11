@@ -11,6 +11,9 @@ dependencies = [
   "google-api-python-client>=2.100.0",
 ]
 
+[project.scripts]
+google-sheets-mcp = "google_sheets_mcp.server:run"
+
 [build-system]
 requires = ["setuptools>=68.0.0", "wheel"]
 build-backend = "setuptools.build_meta"

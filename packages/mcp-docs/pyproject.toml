@@ -11,6 +11,9 @@ dependencies = [
   "google-api-python-client>=2.100.0",
 ]
 
+[project.scripts]
+google-docs-mcp = "google_docs_mcp.server:run"
+
 [build-system]
 requires = ["setuptools>=68.0.0", "wheel"]
 build-backend = "setuptools.build_meta"
