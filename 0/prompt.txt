@@ -1,0 +1,47 @@
+git switch -c feat/confirmation-gate
+
+---
+
+Apply google_mcp_core.safety.require_confirmation to every destructive or outbound tool: gmail send_email, reply_to_message, delete_message, trash_message; drive delete_file, share_file, move_file; calendar delete_event and add_attendees; and the delete/write tools in sheets, docs, forms, tasks and people. Add a `confirm: bool = False` parameter to each service method and to its inputSchema in server.py, and update the tool descriptions to say confirm=true is required. Also add a GOOGLE_MCP_READ_ONLY=1 env flag that makes all write tools raise an error, and wire up ScopeGuard where credentials are built. Don't change read tools.
+
+---
+
+git switch main && git switch -c chore/tests-ci
+
+---
+
+Add pytest tests with mocked Google API clients for the write tools in gmail, drive and calendar. Cover: confirmation required, read-only mode blocks writes, retry on 429/503 in core/retry.py. Add .github/workflows/ci.yml running pytest and ruff on Python 3.10 to 3.12.
+
+---
+
+git switch main && git switch -c chore/cleanup
+
+---
+
+Rewrite README.md to list all 18 servers with their tool counts, a quick start, and a Claude Code / Claude Desktop config example. Add *.egg-info to .gitignore and git rm --cached the committed egg-info folders. Move the root status files (100_PERCENT_COMPLETE.md, IMPLEMENTATION_*.md, etc.) into docs/archive/. Don't touch any scripts that handle credentials.
+
+---
+
+git switch main && git switch -c fix/server-hardening
+
+---
+
+Continue the README and cleanup work here
+
+---
+
+git switch main && git switch -c fix/server-hardening
+
+---
+
+stay on fix/sercer-hardening and In every server.py: rename tools from "drive.search_files" style to "drive_search_files" style, return MCP errors instead of "Error: ..." text, and cache the service instance instead of calling from_config() per request. In core/auth/token_store.py, write the token file with 0600 permissions. Add console_scripts to each pyproject.toml.
+
+---
+
+<pasted_content id="7633">
+git diff                    # review
+git add -A
+git commit -m "Add confirmation gate to write tools"
+# answer "yes" if Entire asks to link, or it does so silently with commit_linking=always
+entire checkpoint list
+</pasted_content id="7633">
