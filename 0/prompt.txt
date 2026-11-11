@@ -1,0 +1,5 @@
+The safety layer is mostly not applied. require_confirmation is only used on drive.create_folder, which is the least risky write. gmail.send_email, delete_message, drive.delete_file and drive.share_file (which notifies by default) have no gate, and ScopeGuard is defined but never used. For a repo that lets agents write to email and Drive, this is the biggest gap.
+
+---
+
+add the server-side write switch and commit the changes

@@ -1,0 +1,55 @@
+{
+  "cli_version": "0.13.2",
+  "checkpoint_id": "01M757CRFDY1G123PP96BGHTMA",
+  "session_id": "af5dd8df-e70a-44f4-9a20-04df84695ddd",
+  "strategy": "manual-commit",
+  "created_at": "2026-11-11T11:55:19.280055Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "save_step_count": 1,
+  "files_touched": [
+    "docs/config.example.yaml",
+    "packages/core/src/google_mcp_core/auth/manager.py",
+    "packages/core/src/google_mcp_core/config.py",
+    "packages/core/tests/test_safety.py",
+    "packages/mcp-gmail/src/google_gmail_mcp/server.py",
+    "packages/mcp-gmail/src/google_gmail_mcp/service.py",
+    "packages/mcp-google-drive/src/google_drive_mcp/server.py",
+    "packages/mcp-google-drive/src/google_drive_mcp/service.py"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-haiku-5-5",
+  "turn_id": "56ac96cbf91f",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 28,
+    "cache_creation_tokens": 50731,
+    "cache_read_tokens": 811586,
+    "output_tokens": 11176,
+    "api_call_count": 13
+  },
+  "session_token_usage": {
+    "input_tokens": 28,
+    "cache_creation_tokens": 50731,
+    "cache_read_tokens": 811586,
+    "output_tokens": 11176,
+    "api_call_count": 13
+  },
+  "redaction": {
+    "replacements": 2,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 2,
+      "credentialed_uri": 0,
+      "entropy": 0,
+      "key_context": 0,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  },
+  "session_metrics": {
+    "turn_count": 1
+  }
+}
