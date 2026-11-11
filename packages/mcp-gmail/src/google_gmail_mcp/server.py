@@ -46,7 +46,7 @@ async def list_tools() -> list[Tool]:
         ),
         Tool(
             name="gmail.send_email",
-            description="Send an email.",
+            description="Send an email (requires confirm=true).",
             inputSchema={
                 "type": "object",
                 "properties": {
@@ -56,8 +56,9 @@ async def list_tools() -> list[Tool]:
                     "cc": {"type": "string", "description": "CC email addresses."},
                     "bcc": {"type": "string", "description": "BCC email addresses."},
                     "html": {"type": "boolean", "description": "Send as HTML.", "default": False},
+                    "confirm": {"type": "boolean", "description": "Must be true to execute.", "default": False},
                 },
-                "required": ["to", "subject", "body"],
+                "required": ["to", "subject", "body", "confirm"],
             },
         ),
         Tool(
@@ -77,15 +78,16 @@ async def list_tools() -> list[Tool]:
         ),
         Tool(
             name="gmail.reply_to_message",
-            description="Reply to an email message.",
+            description="Reply to an email message (requires confirm=true).",
             inputSchema={
                 "type": "object",
                 "properties": {
                     "message_id": {"type": "string", "description": "Message ID to reply to."},
                     "body": {"type": "string", "description": "Reply body."},
                     "html": {"type": "boolean", "description": "Reply as HTML.", "default": False},
+                    "confirm": {"type": "boolean", "description": "Must be true to execute.", "default": False},
                 },
-                "required": ["message_id", "body"],
+                "required": ["message_id", "body", "confirm"],
             },
         ),
         Tool(
@@ -114,13 +116,14 @@ async def list_tools() -> list[Tool]:
         ),
         Tool(
             name="gmail.delete_message",
-            description="Permanently delete a message.",
+            description="Permanently delete a message (requires confirm=true).",
             inputSchema={
                 "type": "object",
                 "properties": {
                     "message_id": {"type": "string", "description": "Message ID to delete."},
+                    "confirm": {"type": "boolean", "description": "Must be true to execute.", "default": False},
                 },
-                "required": ["message_id"],
+                "required": ["message_id", "confirm"],
             },
         ),
         Tool(

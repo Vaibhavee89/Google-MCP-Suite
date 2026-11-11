@@ -11,6 +11,7 @@ from google_mcp_core.client_factory import GoogleClientFactory
 from google_mcp_core.config import AppConfig, load_config
 from google_mcp_core.errors import normalize_google_error
 from google_mcp_core.retry import execute_with_retry
+from google_mcp_core.safety import require_confirmation
 
 
 READONLY_SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"]
@@ -79,9 +80,11 @@ class GmailService:
         body: str,
         cc: Optional[str] = None,
         bcc: Optional[str] = None,
-        html: bool = False
+        html: bool = False,
+        confirm: bool = False,
     ) -> Dict[str, Any]:
-        """Send an email."""
+        """Send an email. Requires confirm=True."""
+        require_confirmation("gmail.send_email", confirm, destructive=True)
         scopes = self._resolve_scopes(SEND_SCOPES)
         client = self._client(scopes)
         try:
@@ -148,9 +151,11 @@ class GmailService:
         self,
         message_id: str,
         body: str,
-        html: bool = False
+        html: bool = False,
+        confirm: bool = False,
     ) -> Dict[str, Any]:
-        """Reply to an email message."""
+        """Reply to an email message. Requires confirm=True."""
+        require_confirmation("gmail.reply_to_message", confirm, destructive=True)
         scopes = self._resolve_scopes(list(dict.fromkeys(READONLY_SCOPES + SEND_SCOPES)))
         client = self._client(scopes)
         try:
@@ -224,8 +229,9 @@ class GmailService:
         except Exception as exc:
             raise normalize_google_error(exc)
 
-    def delete_message(self, message_id: str) -> Dict[str, Any]:
-        """Permanently delete a message."""
+    def delete_message(self, message_id: str, confirm: bool = False) -> Dict[str, Any]:
+        """Permanently delete a message. Requires confirm=True."""
+        require_confirmation("gmail.delete_message", confirm, destructive=True)
         scopes = self._resolve_scopes(MODIFY_SCOPES)
         client = self._client(scopes)
         try:

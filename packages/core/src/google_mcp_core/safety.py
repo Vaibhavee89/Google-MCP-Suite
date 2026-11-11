@@ -1,12 +1,32 @@
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass, field
 from typing import Iterable, Optional
 
 from google_mcp_core.errors import MCPError
 
 
-def require_confirmation(action: str, confirmed: bool) -> None:
+ALLOW_WRITES_ENV = "GOOGLE_MCP_ALLOW_WRITES"
+_TRUTHY = {"1", "true", "yes", "on"}
+
+
+def writes_allowed() -> bool:
+    """Server-side switch, set in the MCP server's environment (not by the agent)."""
+    return os.environ.get(ALLOW_WRITES_ENV, "").strip().lower() in _TRUTHY
+
+
+def require_confirmation(action: str, confirmed: bool, *, destructive: bool = False) -> None:
+    """Gate an action behind confirm=True.
+
+    With destructive=True the operator must also have enabled the server-side
+    switch (GOOGLE_MCP_ALLOW_WRITES=1); an agent-supplied confirm alone is not enough.
+    """
+    if destructive and not writes_allowed():
+        raise MCPError(
+            code="writes_disabled",
+            message=f"{action} is disabled. The server operator must set {ALLOW_WRITES_ENV}=1 to enable it.",
+        )
     if not confirmed:
         raise MCPError(
             code="confirmation_required",

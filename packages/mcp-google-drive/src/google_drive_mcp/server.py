@@ -142,18 +142,19 @@ async def list_tools() -> list[Tool]:
         ),
         Tool(
             name="drive.delete_file",
-            description="Delete a file (move to trash).",
+            description="Permanently delete a file, bypassing trash (requires confirm=true).",
             inputSchema={
                 "type": "object",
                 "properties": {
                     "file_id": {"type": "string", "description": "File ID to delete."},
+                    "confirm": {"type": "boolean", "description": "Must be true to execute.", "default": False},
                 },
-                "required": ["file_id"],
+                "required": ["file_id", "confirm"],
             },
         ),
         Tool(
             name="drive.share_file",
-            description="Share a file with a user.",
+            description="Share a file with a user (requires confirm=true).",
             inputSchema={
                 "type": "object",
                 "properties": {
@@ -161,8 +162,9 @@ async def list_tools() -> list[Tool]:
                     "email": {"type": "string", "description": "User email address."},
                     "role": {"type": "string", "description": "Role (reader, writer, commenter).", "default": "reader"},
                     "send_notification": {"type": "boolean", "description": "Send email notification.", "default": True},
+                    "confirm": {"type": "boolean", "description": "Must be true to execute.", "default": False},
                 },
-                "required": ["file_id", "email"],
+                "required": ["file_id", "email", "confirm"],
             },
         ),
         Tool(

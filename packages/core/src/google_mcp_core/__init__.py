@@ -4,7 +4,7 @@ from google_mcp_core.client_factory import GoogleClientFactory
 from google_mcp_core.errors import MCPError, normalize_google_error
 from google_mcp_core.pagination import paginate
 from google_mcp_core.retry import execute_with_retry
-from google_mcp_core.safety import require_confirmation, ScopeGuard
+from google_mcp_core.safety import require_confirmation, writes_allowed, ScopeGuard
 
 __all__ = [
     "AppConfig",
@@ -19,4 +19,5 @@ __all__ = [
     "execute_with_retry",
     "require_confirmation",
     "ScopeGuard",
+    "writes_allowed",
 ]

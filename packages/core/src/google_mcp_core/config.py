@@ -31,6 +31,8 @@ class GoogleConfig:
     oauth: OAuthConfig
     service_account: ServiceAccountConfig
     default_scopes: list[str] = field(default_factory=list)
+    # Hard ceiling on OAuth scopes. Empty means unrestricted.
+    allowed_scopes: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -70,6 +72,7 @@ def _parse_google_config(payload: Dict[str, Any]) -> GoogleConfig:
         oauth=oauth,
         service_account=service_account,
         default_scopes=list(payload.get("default_scopes", []) or []),
+        allowed_scopes=list(payload.get("allowed_scopes", []) or []),
     )
 
 

@@ -10,6 +10,7 @@ from google_mcp_core.auth.service_account import get_service_account_credentials
 from google_mcp_core.auth.token_store import FileTokenStore, TokenStore
 from google_mcp_core.config import AppConfig, resolve_scopes
 from google_mcp_core.errors import MCPError
+from google_mcp_core.safety import ScopeGuard
 
 
 @dataclass
@@ -18,6 +19,7 @@ class AuthManager:
     token_store: Optional[TokenStore] = None
 
     def get_credentials(self, service_name: str, scopes: list[str]) -> Credentials:
+        ScopeGuard(set(self.config.google.allowed_scopes)).validate(scopes)
         auth_mode = self.config.google.auth_mode.lower()
         if auth_mode == "oauth":
             return get_oauth_credentials(

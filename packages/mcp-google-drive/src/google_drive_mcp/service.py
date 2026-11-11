@@ -224,8 +224,9 @@ class DriveService:
         except Exception as exc:
             raise normalize_google_error(exc)
 
-    def delete_file(self, file_id: str) -> Dict[str, Any]:
-        """Delete a file (move to trash)."""
+    def delete_file(self, file_id: str, confirm: bool = False) -> Dict[str, Any]:
+        """Permanently delete a file (bypasses trash). Requires confirm=True."""
+        require_confirmation("drive.delete_file", confirm, destructive=True)
         scopes = self._resolve_scopes(WRITE_SCOPES)
         client = self._client(scopes)
         try:
@@ -243,9 +244,11 @@ class DriveService:
         file_id: str,
         email: str,
         role: str = "reader",
-        send_notification: bool = True
+        send_notification: bool = True,
+        confirm: bool = False,
     ) -> Dict[str, Any]:
-        """Share a file with a user."""
+        """Share a file with a user. Requires confirm=True."""
+        require_confirmation("drive.share_file", confirm, destructive=True)
         scopes = self._resolve_scopes(WRITE_SCOPES)
         client = self._client(scopes)
         try:

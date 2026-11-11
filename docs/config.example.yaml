@@ -10,6 +10,13 @@ google:
     subject: "admin@example.com"  # optional DWD subject
   default_scopes:
     - "https://www.googleapis.com/auth/drive.metadata.readonly"
+  # Optional hard ceiling: any scope request outside this list is rejected
+  # (scope_not_allowed). Omit or leave empty for no restriction. It must cover
+  # default_scopes, every service's scopes, and the scopes each tool adds
+  # itself (e.g. gmail.send, drive).
+  # allowed_scopes:
+  #   - "https://www.googleapis.com/auth/gmail.readonly"
+  #   - "https://www.googleapis.com/auth/drive.readonly"
 services:
   drive:
     enabled: true
