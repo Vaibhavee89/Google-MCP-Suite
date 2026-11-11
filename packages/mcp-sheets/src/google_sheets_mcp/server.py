@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import asyncio
 import json
+from functools import lru_cache
 from typing import Any
 
 from mcp.server import Server
@@ -12,7 +14,9 @@ from google_sheets_mcp.service import SheetsService
 app = Server("google-sheets-mcp")
 
 
+@lru_cache(maxsize=1)
 def _svc() -> SheetsService:
+    """One service per process: config is read once and Google clients are reused."""
     return SheetsService.from_config()
 
 
@@ -20,7 +24,7 @@ def _svc() -> SheetsService:
 async def list_tools() -> list[Tool]:
     return [
         Tool(
-            name="sheets.read_range",
+            name="sheets_read_range",
             description="Read values from a Sheets range (A1 notation).",
             inputSchema={
                 "type": "object",
@@ -34,7 +38,7 @@ async def list_tools() -> list[Tool]:
             },
         ),
         Tool(
-            name="sheets.get_metadata",
+            name="sheets_get_metadata",
             description="Get spreadsheet metadata (title, sheets, etc.).",
             inputSchema={
                 "type": "object",
@@ -45,8 +49,8 @@ async def list_tools() -> list[Tool]:
             },
         ),
         Tool(
-            name="sheets.update_values",
-            description="Update cell values in a spreadsheet.",
+            name="sheets_update_values",
+            description="Update cell values in a spreadsheet (requires confirm=true).",
             inputSchema={
                 "type": "object",
                 "properties": {
@@ -54,13 +58,14 @@ async def list_tools() -> list[Tool]:
                     "range_a1": {"type": "string", "description": "A1 range notation."},
                     "values": {"type": "array", "items": {"type": "array"}, "description": "2D array of values."},
                     "value_input_option": {"type": "string", "description": "USER_ENTERED or RAW.", "default": "USER_ENTERED"},
+                    "confirm": {"type": "boolean", "description": "Must be true to execute.", "default": False},
                 },
-                "required": ["spreadsheet_id", "range_a1", "values"],
+                "required": ["spreadsheet_id", "range_a1", "values", "confirm"],
             },
         ),
         Tool(
-            name="sheets.append_values",
-            description="Append rows to a spreadsheet.",
+            name="sheets_append_values",
+            description="Append rows to a spreadsheet (requires confirm=true).",
             inputSchema={
                 "type": "object",
                 "properties": {
@@ -68,37 +73,40 @@ async def list_tools() -> list[Tool]:
                     "range_a1": {"type": "string", "description": "A1 range notation."},
                     "values": {"type": "array", "items": {"type": "array"}, "description": "2D array of values."},
                     "value_input_option": {"type": "string", "description": "USER_ENTERED or RAW.", "default": "USER_ENTERED"},
+                    "confirm": {"type": "boolean", "description": "Must be true to execute.", "default": False},
                 },
-                "required": ["spreadsheet_id", "range_a1", "values"],
+                "required": ["spreadsheet_id", "range_a1", "values", "confirm"],
             },
         ),
         Tool(
-            name="sheets.batch_update",
-            description="Execute batch update operations.",
+            name="sheets_batch_update",
+            description="Execute batch update operations (requires confirm=true).",
             inputSchema={
                 "type": "object",
                 "properties": {
                     "spreadsheet_id": {"type": "string", "description": "Spreadsheet ID."},
                     "requests": {"type": "array", "items": {"type": "object"}, "description": "Array of update requests."},
+                    "confirm": {"type": "boolean", "description": "Must be true to execute.", "default": False},
                 },
-                "required": ["spreadsheet_id", "requests"],
+                "required": ["spreadsheet_id", "requests", "confirm"],
             },
         ),
         Tool(
-            name="sheets.create_spreadsheet",
-            description="Create a new spreadsheet.",
+            name="sheets_create_spreadsheet",
+            description="Create a new spreadsheet (requires confirm=true).",
             inputSchema={
                 "type": "object",
                 "properties": {
                     "title": {"type": "string", "description": "Spreadsheet title."},
                     "sheets": {"type": "array", "items": {"type": "object"}, "description": "Array of sheet definitions."},
+                    "confirm": {"type": "boolean", "description": "Must be true to execute.", "default": False},
                 },
-                "required": ["title"],
+                "required": ["title", "confirm"],
             },
         ),
         Tool(
-            name="sheets.add_sheet",
-            description="Add a new sheet to a spreadsheet.",
+            name="sheets_add_sheet",
+            description="Add a new sheet to a spreadsheet (requires confirm=true).",
             inputSchema={
                 "type": "object",
                 "properties": {
@@ -106,37 +114,40 @@ async def list_tools() -> list[Tool]:
                     "title": {"type": "string", "description": "Sheet title."},
                     "row_count": {"type": "integer", "description": "Number of rows.", "default": 1000},
                     "column_count": {"type": "integer", "description": "Number of columns.", "default": 26},
+                    "confirm": {"type": "boolean", "description": "Must be true to execute.", "default": False},
                 },
-                "required": ["spreadsheet_id", "title"],
+                "required": ["spreadsheet_id", "title", "confirm"],
             },
         ),
         Tool(
-            name="sheets.delete_sheet",
-            description="Delete a sheet from a spreadsheet.",
+            name="sheets_delete_sheet",
+            description="Delete a sheet from a spreadsheet (requires confirm=true).",
             inputSchema={
                 "type": "object",
                 "properties": {
                     "spreadsheet_id": {"type": "string", "description": "Spreadsheet ID."},
                     "sheet_id": {"type": "integer", "description": "Sheet ID to delete."},
+                    "confirm": {"type": "boolean", "description": "Must be true to execute.", "default": False},
                 },
-                "required": ["spreadsheet_id", "sheet_id"],
+                "required": ["spreadsheet_id", "sheet_id", "confirm"],
             },
         ),
         Tool(
-            name="sheets.clear_values",
-            description="Clear cell values in a range.",
+            name="sheets_clear_values",
+            description="Clear cell values in a range (requires confirm=true).",
             inputSchema={
                 "type": "object",
                 "properties": {
                     "spreadsheet_id": {"type": "string", "description": "Spreadsheet ID."},
                     "range_a1": {"type": "string", "description": "A1 range notation."},
+                    "confirm": {"type": "boolean", "description": "Must be true to execute.", "default": False},
                 },
-                "required": ["spreadsheet_id", "range_a1"],
+                "required": ["spreadsheet_id", "range_a1", "confirm"],
             },
         ),
         Tool(
-            name="sheets.format_cells",
-            description="Format cells in a range.",
+            name="sheets_format_cells",
+            description="Format cells in a range (requires confirm=true).",
             inputSchema={
                 "type": "object",
                 "properties": {
@@ -147,8 +158,9 @@ async def list_tools() -> list[Tool]:
                     "start_col": {"type": "integer", "description": "Start column index."},
                     "end_col": {"type": "integer", "description": "End column index."},
                     "format_data": {"type": "object", "description": "Format specification."},
+                    "confirm": {"type": "boolean", "description": "Must be true to execute.", "default": False},
                 },
-                "required": ["spreadsheet_id", "sheet_id", "start_row", "end_row", "start_col", "end_col", "format_data"],
+                "required": ["spreadsheet_id", "sheet_id", "start_row", "end_row", "start_col", "end_col", "format_data", "confirm"],
             },
         ),
     ]
@@ -158,24 +170,22 @@ async def list_tools() -> list[Tool]:
 async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent]:
     svc = _svc()
     handlers = {
-        "sheets.read_range": svc.read_range,
-        "sheets.get_metadata": svc.get_metadata,
-        "sheets.update_values": svc.update_values,
-        "sheets.append_values": svc.append_values,
-        "sheets.batch_update": svc.batch_update,
-        "sheets.create_spreadsheet": svc.create_spreadsheet,
-        "sheets.add_sheet": svc.add_sheet,
-        "sheets.delete_sheet": svc.delete_sheet,
-        "sheets.clear_values": svc.clear_values,
-        "sheets.format_cells": svc.format_cells,
+        "sheets_read_range": svc.read_range,
+        "sheets_get_metadata": svc.get_metadata,
+        "sheets_update_values": svc.update_values,
+        "sheets_append_values": svc.append_values,
+        "sheets_batch_update": svc.batch_update,
+        "sheets_create_spreadsheet": svc.create_spreadsheet,
+        "sheets_add_sheet": svc.add_sheet,
+        "sheets_delete_sheet": svc.delete_sheet,
+        "sheets_clear_values": svc.clear_values,
+        "sheets_format_cells": svc.format_cells,
     }
     if name not in handlers:
-        return [TextContent(type="text", text=f"Unknown tool: {name}")]
-    try:
-        result = handlers[name](**arguments)
-        return [TextContent(type="text", text=json.dumps(result, indent=2, default=str))]
-    except Exception as exc:
-        return [TextContent(type="text", text=f"Error: {exc}")]
+        raise ValueError(f"Unknown tool: {name}")
+    # Errors are not caught here: the MCP server turns any exception into an isError result.
+    result = handlers[name](**arguments)
+    return [TextContent(type="text", text=json.dumps(result, indent=2, default=str))]
 
 
 async def main() -> None:
@@ -183,6 +193,10 @@ async def main() -> None:
         await app.run(read_stream, write_stream, app.create_initialization_options())
 
 
-if __name__ == "__main__":
-    import asyncio
+def run() -> None:
+    """Console-script entry point."""
     asyncio.run(main())
+
+
+if __name__ == "__main__":
+    run()

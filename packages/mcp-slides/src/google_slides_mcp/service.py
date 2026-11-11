@@ -8,6 +8,7 @@ from google_mcp_core.client_factory import GoogleClientFactory
 from google_mcp_core.config import AppConfig, load_config
 from google_mcp_core.errors import normalize_google_error
 from google_mcp_core.retry import execute_with_retry
+from google_mcp_core.safety import require_writable
 
 
 READONLY_SCOPES = ["https://www.googleapis.com/auth/presentations.readonly"]
@@ -171,6 +172,7 @@ class SlidesService:
             insertion_index: Position to insert (None = end)
             layout: Slide layout (BLANK, TITLE, TITLE_AND_BODY, etc.)
         """
+        require_writable("slides_create_slide")
         scopes = self._resolve_scopes(WRITE_SCOPES)
         client = self._slides_client(scopes)
         try:
@@ -246,7 +248,7 @@ class SlidesService:
                 presentationId=presentation_id,
                 body={"requests": requests}
             )
-            result = self._execute(batch_request)
+            self._execute(batch_request)
 
             return {
                 "presentation_id": presentation_id,
@@ -275,6 +277,7 @@ class SlidesService:
             x, y: Position in points
             width, height: Size in points
         """
+        require_writable("slides_add_text_to_slide")
         scopes = self._resolve_scopes(WRITE_SCOPES)
         client = self._slides_client(scopes)
         try:
@@ -314,7 +317,7 @@ class SlidesService:
                 presentationId=presentation_id,
                 body={"requests": requests}
             )
-            result = self._execute(batch_request)
+            self._execute(batch_request)
 
             return {
                 "presentation_id": presentation_id,
@@ -338,6 +341,7 @@ class SlidesService:
             shape_id: The shape/text box object ID
             new_text: New text content
         """
+        require_writable("slides_update_text")
         scopes = self._resolve_scopes(WRITE_SCOPES)
         client = self._slides_client(scopes)
         try:
@@ -361,7 +365,7 @@ class SlidesService:
                 presentationId=presentation_id,
                 body={"requests": requests}
             )
-            result = self._execute(batch_request)
+            self._execute(batch_request)
 
             return {
                 "presentation_id": presentation_id,
@@ -382,6 +386,7 @@ class SlidesService:
             presentation_id: The presentation ID
             slide_id: The slide object ID to delete
         """
+        require_writable("slides_delete_slide")
         scopes = self._resolve_scopes(WRITE_SCOPES)
         client = self._slides_client(scopes)
         try:
@@ -397,7 +402,7 @@ class SlidesService:
                 presentationId=presentation_id,
                 body={"requests": requests}
             )
-            result = self._execute(batch_request)
+            self._execute(batch_request)
 
             return {
                 "presentation_id": presentation_id,
@@ -416,6 +421,7 @@ class SlidesService:
         Args:
             title: Title for the new presentation
         """
+        require_writable("slides_create_presentation")
         scopes = self._resolve_scopes(WRITE_SCOPES)
         client = self._slides_client(scopes)
         try:

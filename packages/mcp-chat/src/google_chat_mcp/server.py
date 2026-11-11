@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import asyncio
 import json
+from functools import lru_cache
 from typing import Any
 
 from mcp.server import Server
@@ -12,7 +14,9 @@ from google_chat_mcp.service import ChatService
 app = Server("google-chat-mcp")
 
 
+@lru_cache(maxsize=1)
 def _svc() -> ChatService:
+    """One service per process: config is read once and Google clients are reused."""
     return ChatService.from_config()
 
 
@@ -20,7 +24,7 @@ def _svc() -> ChatService:
 async def list_tools() -> list[Tool]:
     return [
         Tool(
-            name="chat.list_spaces",
+            name="chat_list_spaces",
             description="List Google Chat spaces.",
             inputSchema={
                 "type": "object",
@@ -31,7 +35,7 @@ async def list_tools() -> list[Tool]:
             },
         ),
         Tool(
-            name="chat.search_messages",
+            name="chat_search_messages",
             description="Search messages in a Google Chat space.",
             inputSchema={
                 "type": "object",
@@ -51,16 +55,14 @@ async def list_tools() -> list[Tool]:
 async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent]:
     svc = _svc()
     handlers = {
-        "chat.list_spaces": svc.list_spaces,
-        "chat.search_messages": svc.search_messages,
+        "chat_list_spaces": svc.list_spaces,
+        "chat_search_messages": svc.search_messages,
     }
     if name not in handlers:
-        return [TextContent(type="text", text=f"Unknown tool: {name}")]
-    try:
-        result = handlers[name](**arguments)
-        return [TextContent(type="text", text=json.dumps(result, indent=2, default=str))]
-    except Exception as exc:
-        return [TextContent(type="text", text=f"Error: {exc}")]
+        raise ValueError(f"Unknown tool: {name}")
+    # Errors are not caught here: the MCP server turns any exception into an isError result.
+    result = handlers[name](**arguments)
+    return [TextContent(type="text", text=json.dumps(result, indent=2, default=str))]
 
 
 async def main() -> None:
@@ -68,6 +70,10 @@ async def main() -> None:
         await app.run(read_stream, write_stream, app.create_initialization_options())
 
 
-if __name__ == "__main__":
-    import asyncio
+def run() -> None:
+    """Console-script entry point."""
     asyncio.run(main())
+
+
+if __name__ == "__main__":
+    run()

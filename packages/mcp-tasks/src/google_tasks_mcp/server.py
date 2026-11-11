@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import asyncio
 import json
+from functools import lru_cache
 from typing import Any
 
 from mcp.server import Server
@@ -12,7 +14,9 @@ from google_tasks_mcp.service import TasksService
 app = Server("google-tasks-mcp")
 
 
+@lru_cache(maxsize=1)
 def _svc() -> TasksService:
+    """One service per process: config is read once and Google clients are reused."""
     return TasksService.from_config()
 
 
@@ -20,7 +24,7 @@ def _svc() -> TasksService:
 async def list_tools() -> list[Tool]:
     return [
         Tool(
-            name="tasks.list_task_lists",
+            name="tasks_list_task_lists",
             description="List all task lists.",
             inputSchema={
                 "type": "object",
@@ -30,7 +34,7 @@ async def list_tools() -> list[Tool]:
             },
         ),
         Tool(
-            name="tasks.list_tasks",
+            name="tasks_list_tasks",
             description="List tasks in a task list.",
             inputSchema={
                 "type": "object",
@@ -43,7 +47,7 @@ async def list_tools() -> list[Tool]:
             },
         ),
         Tool(
-            name="tasks.get_task",
+            name="tasks_get_task",
             description="Get a specific task.",
             inputSchema={
                 "type": "object",
@@ -55,8 +59,8 @@ async def list_tools() -> list[Tool]:
             },
         ),
         Tool(
-            name="tasks.create_task",
-            description="Create a new task in a task list.",
+            name="tasks_create_task",
+            description="Create a new task in a task list (requires confirm=true).",
             inputSchema={
                 "type": "object",
                 "properties": {
@@ -64,13 +68,14 @@ async def list_tools() -> list[Tool]:
                     "title": {"type": "string", "description": "Task title."},
                     "notes": {"type": "string", "description": "Task notes/description."},
                     "due": {"type": "string", "description": "Due date (RFC 3339 timestamp)."},
+                    "confirm": {"type": "boolean", "description": "Must be true to execute.", "default": False},
                 },
-                "required": ["tasklist_id", "title"],
+                "required": ["tasklist_id", "title", "confirm"],
             },
         ),
         Tool(
-            name="tasks.update_task",
-            description="Update an existing task.",
+            name="tasks_update_task",
+            description="Update an existing task (requires confirm=true).",
             inputSchema={
                 "type": "object",
                 "properties": {
@@ -80,59 +85,64 @@ async def list_tools() -> list[Tool]:
                     "notes": {"type": "string", "description": "New task notes."},
                     "due": {"type": "string", "description": "New due date."},
                     "status": {"type": "string", "description": "Task status (needsAction, completed)."},
+                    "confirm": {"type": "boolean", "description": "Must be true to execute.", "default": False},
                 },
-                "required": ["tasklist_id", "task_id"],
+                "required": ["tasklist_id", "task_id", "confirm"],
             },
         ),
         Tool(
-            name="tasks.delete_task",
-            description="Delete a task.",
+            name="tasks_delete_task",
+            description="Delete a task (requires confirm=true).",
             inputSchema={
                 "type": "object",
                 "properties": {
                     "tasklist_id": {"type": "string", "description": "Task list ID."},
                     "task_id": {"type": "string", "description": "Task ID to delete."},
+                    "confirm": {"type": "boolean", "description": "Must be true to execute.", "default": False},
                 },
-                "required": ["tasklist_id", "task_id"],
+                "required": ["tasklist_id", "task_id", "confirm"],
             },
         ),
         Tool(
-            name="tasks.complete_task",
-            description="Mark a task as completed.",
+            name="tasks_complete_task",
+            description="Mark a task as completed (requires confirm=true).",
             inputSchema={
                 "type": "object",
                 "properties": {
                     "tasklist_id": {"type": "string", "description": "Task list ID."},
                     "task_id": {"type": "string", "description": "Task ID to complete."},
+                    "confirm": {"type": "boolean", "description": "Must be true to execute.", "default": False},
                 },
-                "required": ["tasklist_id", "task_id"],
+                "required": ["tasklist_id", "task_id", "confirm"],
             },
         ),
         Tool(
-            name="tasks.create_task_list",
-            description="Create a new task list.",
+            name="tasks_create_task_list",
+            description="Create a new task list (requires confirm=true).",
             inputSchema={
                 "type": "object",
                 "properties": {
                     "title": {"type": "string", "description": "Task list title."},
+                    "confirm": {"type": "boolean", "description": "Must be true to execute.", "default": False},
                 },
-                "required": ["title"],
+                "required": ["title", "confirm"],
             },
         ),
         Tool(
-            name="tasks.delete_task_list",
-            description="Delete a task list.",
+            name="tasks_delete_task_list",
+            description="Delete a task list (requires confirm=true).",
             inputSchema={
                 "type": "object",
                 "properties": {
                     "tasklist_id": {"type": "string", "description": "Task list ID to delete."},
+                    "confirm": {"type": "boolean", "description": "Must be true to execute.", "default": False},
                 },
-                "required": ["tasklist_id"],
+                "required": ["tasklist_id", "confirm"],
             },
         ),
         Tool(
-            name="tasks.move_task",
-            description="Move a task to a different position.",
+            name="tasks_move_task",
+            description="Move a task to a different position (requires confirm=true).",
             inputSchema={
                 "type": "object",
                 "properties": {
@@ -140,8 +150,9 @@ async def list_tools() -> list[Tool]:
                     "task_id": {"type": "string", "description": "Task ID to move."},
                     "parent": {"type": "string", "description": "New parent task ID."},
                     "previous": {"type": "string", "description": "Previous sibling task ID."},
+                    "confirm": {"type": "boolean", "description": "Must be true to execute.", "default": False},
                 },
-                "required": ["tasklist_id", "task_id"],
+                "required": ["tasklist_id", "task_id", "confirm"],
             },
         ),
     ]
@@ -151,24 +162,22 @@ async def list_tools() -> list[Tool]:
 async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent]:
     svc = _svc()
     handlers = {
-        "tasks.list_task_lists": svc.list_task_lists,
-        "tasks.list_tasks": svc.list_tasks,
-        "tasks.get_task": svc.get_task,
-        "tasks.create_task": svc.create_task,
-        "tasks.update_task": svc.update_task,
-        "tasks.delete_task": svc.delete_task,
-        "tasks.complete_task": svc.complete_task,
-        "tasks.create_task_list": svc.create_task_list,
-        "tasks.delete_task_list": svc.delete_task_list,
-        "tasks.move_task": svc.move_task,
+        "tasks_list_task_lists": svc.list_task_lists,
+        "tasks_list_tasks": svc.list_tasks,
+        "tasks_get_task": svc.get_task,
+        "tasks_create_task": svc.create_task,
+        "tasks_update_task": svc.update_task,
+        "tasks_delete_task": svc.delete_task,
+        "tasks_complete_task": svc.complete_task,
+        "tasks_create_task_list": svc.create_task_list,
+        "tasks_delete_task_list": svc.delete_task_list,
+        "tasks_move_task": svc.move_task,
     }
     if name not in handlers:
-        return [TextContent(type="text", text=f"Unknown tool: {name}")]
-    try:
-        result = handlers[name](**arguments)
-        return [TextContent(type="text", text=json.dumps(result, indent=2, default=str))]
-    except Exception as exc:
-        return [TextContent(type="text", text=f"Error: {exc}")]
+        raise ValueError(f"Unknown tool: {name}")
+    # Errors are not caught here: the MCP server turns any exception into an isError result.
+    result = handlers[name](**arguments)
+    return [TextContent(type="text", text=json.dumps(result, indent=2, default=str))]
 
 
 async def main() -> None:
@@ -176,6 +185,10 @@ async def main() -> None:
         await app.run(read_stream, write_stream, app.create_initialization_options())
 
 
-if __name__ == "__main__":
-    import asyncio
+def run() -> None:
+    """Console-script entry point."""
     asyncio.run(main())
+
+
+if __name__ == "__main__":
+    run()

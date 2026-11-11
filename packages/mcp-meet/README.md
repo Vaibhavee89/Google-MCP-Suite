@@ -3,5 +3,5 @@
 MCP server for Google Meet via Admin Reports API.
 
 ## Tools
-- meet.list_activities
-- meet.get_activity
+- meet_list_activities
+- meet_get_activity

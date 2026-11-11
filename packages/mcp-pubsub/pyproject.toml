@@ -1,6 +1,6 @@
 [build-system]
 requires = ["setuptools>=61.0"]
-build-backend = "setuptools.build_backend"
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "google-pubsub-mcp"
@@ -9,6 +9,9 @@ dependencies = [
   "google-mcp-core>=0.1.0",
   "google-cloud-pubsub>=2.0.0",
 ]
+
+[project.scripts]
+google-pubsub-mcp = "google_pubsub_mcp.server:run"
 
 [project.optional-dependencies]
 dev = [

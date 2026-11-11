@@ -8,6 +8,7 @@ from google_mcp_core.client_factory import GoogleClientFactory
 from google_mcp_core.config import AppConfig, load_config
 from google_mcp_core.errors import normalize_google_error
 from google_mcp_core.retry import execute_with_retry
+from google_mcp_core.safety import require_confirmation
 
 
 READONLY_SCOPES = ["https://www.googleapis.com/auth/forms.responses.readonly"]
@@ -89,8 +90,9 @@ class FormsService:
         except Exception as exc:
             raise normalize_google_error(exc)
 
-    def create_form(self, title: str, description: Optional[str] = None) -> Dict[str, Any]:
-        """Create a new Google Form."""
+    def create_form(self, title: str, description: Optional[str] = None, confirm: bool = False) -> Dict[str, Any]:
+        """Create a new Google Form. Requires confirm=True."""
+        require_confirmation("forms_create_form", confirm)
         scopes = self._resolve_scopes(WRITE_SCOPES)
         client = self._client(scopes)
         try:
@@ -118,9 +120,11 @@ class FormsService:
         form_id: str,
         question: str,
         required: bool = False,
-        paragraph: bool = False
+        paragraph: bool = False,
+        confirm: bool = False,
     ) -> Dict[str, Any]:
-        """Add a text question to a form."""
+        """Add a text question to a form. Requires confirm=True."""
+        require_confirmation("forms_add_text_question", confirm)
         scopes = self._resolve_scopes(WRITE_SCOPES)
         client = self._client(scopes)
         try:
@@ -146,7 +150,7 @@ class FormsService:
             }
             
             request = client.forms().batchUpdate(formId=form_id, body=body)
-            result = self._execute(request)
+            self._execute(request)
             return {
                 "form_id": form_id,
                 "message": "Text question added successfully"
@@ -159,9 +163,11 @@ class FormsService:
         form_id: str,
         question: str,
         options: list[str],
-        required: bool = False
+        required: bool = False,
+        confirm: bool = False,
     ) -> Dict[str, Any]:
-        """Add a multiple choice question to a form."""
+        """Add a multiple choice question to a form. Requires confirm=True."""
+        require_confirmation("forms_add_multiple_choice_question", confirm)
         scopes = self._resolve_scopes(WRITE_SCOPES)
         client = self._client(scopes)
         try:
@@ -188,7 +194,7 @@ class FormsService:
             }
             
             request = client.forms().batchUpdate(formId=form_id, body=body)
-            result = self._execute(request)
+            self._execute(request)
             return {
                 "form_id": form_id,
                 "message": "Multiple choice question added successfully"
@@ -201,9 +207,11 @@ class FormsService:
         form_id: str,
         question: str,
         options: list[str],
-        required: bool = False
+        required: bool = False,
+        confirm: bool = False,
     ) -> Dict[str, Any]:
-        """Add a checkbox question to a form."""
+        """Add a checkbox question to a form. Requires confirm=True."""
+        require_confirmation("forms_add_checkbox_question", confirm)
         scopes = self._resolve_scopes(WRITE_SCOPES)
         client = self._client(scopes)
         try:
@@ -230,7 +238,7 @@ class FormsService:
             }
             
             request = client.forms().batchUpdate(formId=form_id, body=body)
-            result = self._execute(request)
+            self._execute(request)
             return {
                 "form_id": form_id,
                 "message": "Checkbox question added successfully"
@@ -242,9 +250,11 @@ class FormsService:
         self,
         form_id: str,
         title: Optional[str] = None,
-        description: Optional[str] = None
+        description: Optional[str] = None,
+        confirm: bool = False,
     ) -> Dict[str, Any]:
-        """Update form title and description."""
+        """Update form title and description. Requires confirm=True."""
+        require_confirmation("forms_update_form_info", confirm)
         scopes = self._resolve_scopes(WRITE_SCOPES)
         client = self._client(scopes)
         try:
@@ -271,7 +281,7 @@ class FormsService:
             
             body = {"requests": requests}
             request = client.forms().batchUpdate(formId=form_id, body=body)
-            result = self._execute(request)
+            self._execute(request)
             return {
                 "form_id": form_id,
                 "message": "Form info updated successfully"
@@ -279,8 +289,9 @@ class FormsService:
         except Exception as exc:
             raise normalize_google_error(exc)
 
-    def delete_item(self, form_id: str, item_id: str) -> Dict[str, Any]:
-        """Delete a question/item from a form."""
+    def delete_item(self, form_id: str, item_id: str, confirm: bool = False) -> Dict[str, Any]:
+        """Delete a question/item from a form. Requires confirm=True."""
+        require_confirmation("forms_delete_item", confirm, destructive=True)
         scopes = self._resolve_scopes(WRITE_SCOPES)
         client = self._client(scopes)
         try:
@@ -293,7 +304,7 @@ class FormsService:
             }
             
             request = client.forms().batchUpdate(formId=form_id, body=body)
-            result = self._execute(request)
+            self._execute(request)
             return {
                 "form_id": form_id,
                 "message": "Item deleted successfully"
@@ -306,9 +317,11 @@ class FormsService:
         form_id: str,
         collect_email: Optional[bool] = None,
         allow_response_edits: Optional[bool] = None,
-        quiz_mode: Optional[bool] = None
+        quiz_mode: Optional[bool] = None,
+        confirm: bool = False,
     ) -> Dict[str, Any]:
-        """Update form settings."""
+        """Update form settings. Requires confirm=True."""
+        require_confirmation("forms_update_settings", confirm)
         scopes = self._resolve_scopes(WRITE_SCOPES)
         client = self._client(scopes)
         try:
@@ -329,7 +342,7 @@ class FormsService:
             
             body = {"requests": requests}
             request = client.forms().batchUpdate(formId=form_id, body=body)
-            result = self._execute(request)
+            self._execute(request)
             return {
                 "form_id": form_id,
                 "message": "Form settings updated successfully"

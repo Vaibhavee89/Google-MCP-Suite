@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import random
 import time
-from typing import Callable, Iterable, Optional, TypeVar
+from typing import Callable, TypeVar
 
 from googleapiclient.errors import HttpError
 

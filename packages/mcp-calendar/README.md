@@ -43,7 +43,7 @@ The server uses the shared `google-mcp-core` configuration. Make sure you have:
 
 ## Available Tools
 
-### 1. calendar.search_events
+### 1. calendar_search_events
 Search for calendar events with optional filters.
 
 **Parameters:**
@@ -54,14 +54,14 @@ Search for calendar events with optional filters.
 - `limit` (integer, default: 25) - Maximum results
 - `page_token` (string, optional) - Pagination token
 
-### 2. calendar.get_event
+### 2. calendar_get_event
 Get details of a specific event.
 
 **Parameters:**
 - `event_id` (string, required) - Event ID
 - `calendar_id` (string, default: "primary") - Calendar ID
 
-### 3. calendar.create_event
+### 3. calendar_create_event
 Create a new calendar event.
 
 **Parameters:**
@@ -86,7 +86,7 @@ Create a new calendar event.
 }
 ```
 
-### 4. calendar.update_event
+### 4. calendar_update_event
 Update an existing event.
 
 **Parameters:**
@@ -100,19 +100,19 @@ Update an existing event.
 - `timezone` (string, default: "UTC") - Timezone
 - `reminders` (object, optional) - New reminder settings
 
-### 5. calendar.delete_event
+### 5. calendar_delete_event
 Delete a calendar event.
 
 **Parameters:**
 - `event_id` (string, required) - Event ID to delete
 - `calendar_id` (string, default: "primary") - Calendar ID
 
-### 6. calendar.list_calendars
+### 6. calendar_list_calendars
 List all accessible calendars.
 
 **Parameters:** None
 
-### 7. calendar.create_calendar
+### 7. calendar_create_calendar
 Create a new calendar.
 
 **Parameters:**
@@ -120,7 +120,7 @@ Create a new calendar.
 - `description` (string, optional) - Calendar description
 - `timezone` (string, default: "UTC") - Calendar timezone
 
-### 8. calendar.add_attendees
+### 8. calendar_add_attendees
 Add attendees to an existing event.
 
 **Parameters:**
@@ -128,14 +128,14 @@ Add attendees to an existing event.
 - `attendees` (array of strings, required) - Email addresses to add
 - `calendar_id` (string, default: "primary") - Calendar ID
 
-### 9. calendar.quick_add_event
+### 9. calendar_quick_add_event
 Create event using natural language (e.g., "Meeting tomorrow at 3pm").
 
 **Parameters:**
 - `text` (string, required) - Natural language event description
 - `calendar_id` (string, default: "primary") - Calendar ID
 
-### 10. calendar.check_freebusy
+### 10. calendar_check_freebusy
 Check free/busy availability across calendars.
 
 **Parameters:**

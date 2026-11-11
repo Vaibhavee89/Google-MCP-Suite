@@ -7,7 +7,7 @@ from google_sheets_mcp.service import SheetsService
 
 TOOL_DEFINITIONS: list[Dict[str, Any]] = [
     {
-        "name": "sheets.read_range",
+        "name": "sheets_read_range",
         "description": "Read values from a Sheet range (A1 notation).",
         "parameters": {
             "spreadsheet_id": "string",
@@ -17,7 +17,7 @@ TOOL_DEFINITIONS: list[Dict[str, Any]] = [
         },
     },
     {
-        "name": "sheets.get_metadata",
+        "name": "sheets_get_metadata",
         "description": "Get spreadsheet metadata.",
         "parameters": {"spreadsheet_id": "string"},
     },
@@ -31,8 +31,8 @@ def list_tools() -> list[Dict[str, Any]]:
 def call_tool(name: str, **kwargs: Any) -> Dict[str, Any]:
     service = SheetsService.from_config()
     handlers = {
-        "sheets.read_range": service.read_range,
-        "sheets.get_metadata": service.get_metadata,
+        "sheets_read_range": service.read_range,
+        "sheets_get_metadata": service.get_metadata,
     }
     if name not in handlers:
         raise ValueError(f"Unknown tool: {name}")

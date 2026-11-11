@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import asyncio
 import json
+from functools import lru_cache
 from typing import Any
 
 from mcp.server import Server
@@ -12,7 +14,9 @@ from google_vertexai_mcp.service import VertexAIService
 app = Server("google-vertexai-mcp")
 
 
+@lru_cache(maxsize=1)
 def _svc() -> VertexAIService:
+    """One service per process: config is read once and Google clients are reused."""
     return VertexAIService.from_config()
 
 
@@ -20,7 +24,7 @@ def _svc() -> VertexAIService:
 async def list_tools() -> list[Tool]:
     return [
         Tool(
-            name="vertexai.list_models",
+            name="vertexai_list_models",
             description="List Vertex AI models.",
             inputSchema={
                 "type": "object",
@@ -30,7 +34,7 @@ async def list_tools() -> list[Tool]:
             },
         ),
         Tool(
-            name="vertexai.get_model",
+            name="vertexai_get_model",
             description="Get Vertex AI model details.",
             inputSchema={
                 "type": "object",
@@ -41,7 +45,7 @@ async def list_tools() -> list[Tool]:
             },
         ),
         Tool(
-            name="vertexai.list_endpoints",
+            name="vertexai_list_endpoints",
             description="List Vertex AI endpoints.",
             inputSchema={
                 "type": "object",
@@ -51,7 +55,7 @@ async def list_tools() -> list[Tool]:
             },
         ),
         Tool(
-            name="vertexai.get_endpoint",
+            name="vertexai_get_endpoint",
             description="Get Vertex AI endpoint details.",
             inputSchema={
                 "type": "object",
@@ -62,7 +66,7 @@ async def list_tools() -> list[Tool]:
             },
         ),
         Tool(
-            name="vertexai.list_datasets",
+            name="vertexai_list_datasets",
             description="List Vertex AI datasets.",
             inputSchema={
                 "type": "object",
@@ -78,19 +82,17 @@ async def list_tools() -> list[Tool]:
 async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent]:
     svc = _svc()
     handlers = {
-        "vertexai.list_models": svc.list_models,
-        "vertexai.get_model": svc.get_model,
-        "vertexai.list_endpoints": svc.list_endpoints,
-        "vertexai.get_endpoint": svc.get_endpoint,
-        "vertexai.list_datasets": svc.list_datasets,
+        "vertexai_list_models": svc.list_models,
+        "vertexai_get_model": svc.get_model,
+        "vertexai_list_endpoints": svc.list_endpoints,
+        "vertexai_get_endpoint": svc.get_endpoint,
+        "vertexai_list_datasets": svc.list_datasets,
     }
     if name not in handlers:
-        return [TextContent(type="text", text=f"Unknown tool: {name}")]
-    try:
-        result = handlers[name](**arguments)
-        return [TextContent(type="text", text=json.dumps(result, indent=2, default=str))]
-    except Exception as exc:
-        return [TextContent(type="text", text=f"Error: {exc}")]
+        raise ValueError(f"Unknown tool: {name}")
+    # Errors are not caught here: the MCP server turns any exception into an isError result.
+    result = handlers[name](**arguments)
+    return [TextContent(type="text", text=json.dumps(result, indent=2, default=str))]
 
 
 async def main() -> None:
@@ -98,6 +100,10 @@ async def main() -> None:
         await app.run(read_stream, write_stream, app.create_initialization_options())
 
 
-if __name__ == "__main__":
-    import asyncio
+def run() -> None:
+    """Console-script entry point."""
     asyncio.run(main())
+
+
+if __name__ == "__main__":
+    run()

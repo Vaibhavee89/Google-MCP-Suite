@@ -3,5 +3,5 @@
 MCP server for Google Docs using `google-mcp-core`.
 
 ## Tools
-- docs.get_document
-- docs.export_text
+- docs_get_document
+- docs_export_text

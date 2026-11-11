@@ -11,6 +11,9 @@ dependencies = [
   "google-api-python-client>=2.100.0",
 ]
 
+[project.scripts]
+google-chat-mcp = "google_chat_mcp.server:run"
+
 [build-system]
 requires = ["setuptools>=68.0.0", "wheel"]
 build-backend = "setuptools.build_meta"

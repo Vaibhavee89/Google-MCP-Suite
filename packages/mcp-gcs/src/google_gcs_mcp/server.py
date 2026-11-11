@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import asyncio
 import json
+from functools import lru_cache
 from typing import Any
 
 from mcp.server import Server
@@ -12,7 +14,9 @@ from google_gcs_mcp.service import GCSService
 app = Server("google-gcs-mcp")
 
 
+@lru_cache(maxsize=1)
 def _svc() -> GCSService:
+    """One service per process: config is read once and Google clients are reused."""
     return GCSService.from_config()
 
 
@@ -20,7 +24,7 @@ def _svc() -> GCSService:
 async def list_tools() -> list[Tool]:
     return [
         Tool(
-            name="gcs.list_objects",
+            name="gcs_list_objects",
             description="List objects in a GCS bucket.",
             inputSchema={
                 "type": "object",
@@ -34,7 +38,7 @@ async def list_tools() -> list[Tool]:
             },
         ),
         Tool(
-            name="gcs.get_object_metadata",
+            name="gcs_get_object_metadata",
             description="Get GCS object metadata.",
             inputSchema={
                 "type": "object",
@@ -46,7 +50,7 @@ async def list_tools() -> list[Tool]:
             },
         ),
         Tool(
-            name="gcs.download_object",
+            name="gcs_download_object",
             description="Download GCS object contents as base64.",
             inputSchema={
                 "type": "object",
@@ -64,17 +68,15 @@ async def list_tools() -> list[Tool]:
 async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent]:
     svc = _svc()
     handlers = {
-        "gcs.list_objects": svc.list_objects,
-        "gcs.get_object_metadata": svc.get_object_metadata,
-        "gcs.download_object": svc.download_object,
+        "gcs_list_objects": svc.list_objects,
+        "gcs_get_object_metadata": svc.get_object_metadata,
+        "gcs_download_object": svc.download_object,
     }
     if name not in handlers:
-        return [TextContent(type="text", text=f"Unknown tool: {name}")]
-    try:
-        result = handlers[name](**arguments)
-        return [TextContent(type="text", text=json.dumps(result, indent=2, default=str))]
-    except Exception as exc:
-        return [TextContent(type="text", text=f"Error: {exc}")]
+        raise ValueError(f"Unknown tool: {name}")
+    # Errors are not caught here: the MCP server turns any exception into an isError result.
+    result = handlers[name](**arguments)
+    return [TextContent(type="text", text=json.dumps(result, indent=2, default=str))]
 
 
 async def main() -> None:
@@ -82,6 +84,10 @@ async def main() -> None:
         await app.run(read_stream, write_stream, app.create_initialization_options())
 
 
-if __name__ == "__main__":
-    import asyncio
+def run() -> None:
+    """Console-script entry point."""
     asyncio.run(main())
+
+
+if __name__ == "__main__":
+    run()

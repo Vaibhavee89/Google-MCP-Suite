@@ -4,14 +4,13 @@ import base64
 from dataclasses import dataclass
 from typing import Any, Dict, Optional
 
-from googleapiclient.errors import HttpError
 
 from google_mcp_core.auth.manager import AuthManager
 from google_mcp_core.client_factory import GoogleClientFactory
 from google_mcp_core.config import AppConfig, load_config
-from google_mcp_core.errors import MCPError, normalize_google_error
+from google_mcp_core.errors import normalize_google_error
 from google_mcp_core.retry import execute_with_retry
-from google_mcp_core.safety import require_confirmation
+from google_mcp_core.safety import require_confirmation, require_writable
 
 
 READONLY_SCOPES = ["https://www.googleapis.com/auth/drive.readonly"]
@@ -128,7 +127,7 @@ class DriveService:
             raise normalize_google_error(exc)
 
     def create_folder(self, name: str, parent_id: Optional[str] = None, confirm: bool = False) -> Dict[str, Any]:
-        require_confirmation("drive.create_folder", confirm)
+        require_confirmation("drive_create_folder", confirm)
         scopes = self._resolve_scopes(WRITE_SCOPES)
         client = self._client(scopes)
         body = {"name": name, "mimeType": "application/vnd.google-apps.folder"}
@@ -148,6 +147,7 @@ class DriveService:
         parent_id: Optional[str] = None
     ) -> Dict[str, Any]:
         """Upload a file to Google Drive."""
+        require_writable("drive_upload_file")
         scopes = self._resolve_scopes(WRITE_SCOPES)
         client = self._client(scopes)
         try:
@@ -179,8 +179,9 @@ class DriveService:
         except Exception as exc:
             raise normalize_google_error(exc)
 
-    def move_file(self, file_id: str, new_parent_id: str) -> Dict[str, Any]:
-        """Move a file to a different folder."""
+    def move_file(self, file_id: str, new_parent_id: str, confirm: bool = False) -> Dict[str, Any]:
+        """Move a file to a different folder. Requires confirm=True."""
+        require_confirmation("drive_move_file", confirm, destructive=True)
         scopes = self._resolve_scopes(WRITE_SCOPES)
         client = self._client(scopes)
         try:
@@ -207,6 +208,7 @@ class DriveService:
 
     def copy_file(self, file_id: str, new_name: Optional[str] = None) -> Dict[str, Any]:
         """Copy a file."""
+        require_writable("drive_copy_file")
         scopes = self._resolve_scopes(WRITE_SCOPES)
         client = self._client(scopes)
         try:
@@ -224,8 +226,9 @@ class DriveService:
         except Exception as exc:
             raise normalize_google_error(exc)
 
-    def delete_file(self, file_id: str) -> Dict[str, Any]:
-        """Delete a file (move to trash)."""
+    def delete_file(self, file_id: str, confirm: bool = False) -> Dict[str, Any]:
+        """Permanently delete a file (bypasses trash). Requires confirm=True."""
+        require_confirmation("drive_delete_file", confirm, destructive=True)
         scopes = self._resolve_scopes(WRITE_SCOPES)
         client = self._client(scopes)
         try:
@@ -243,9 +246,11 @@ class DriveService:
         file_id: str,
         email: str,
         role: str = "reader",
-        send_notification: bool = True
+        send_notification: bool = True,
+        confirm: bool = False,
     ) -> Dict[str, Any]:
-        """Share a file with a user."""
+        """Share a file with a user. Requires confirm=True."""
+        require_confirmation("drive_share_file", confirm, destructive=True)
         scopes = self._resolve_scopes(WRITE_SCOPES)
         client = self._client(scopes)
         try:
@@ -278,6 +283,7 @@ class DriveService:
         description: Optional[str] = None
     ) -> Dict[str, Any]:
         """Update file metadata."""
+        require_writable("drive_update_file_metadata")
         scopes = self._resolve_scopes(WRITE_SCOPES)
         client = self._client(scopes)
         try:

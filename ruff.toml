@@ -1,0 +1,12 @@
+target-version = "py310"
+extend-exclude = ["**/*.egg-info"]
+
+[lint]
+# ruff's baseline: syntax errors, undefined names, unused imports/variables, import placement.
+select = ["E4", "E7", "E9", "F"]
+
+[lint.per-file-ignores]
+# Dead scaffold ("to be merged into service.py"): never imported, so its names don't resolve.
+"packages/mcp-gmail/src/google_gmail_mcp/service_write.py" = ["F821"]
+# Connectivity script that imports modules only to check they are installed.
+"packages/mcp-calendar/test_connection.py" = ["F401", "F841"]

@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import asyncio
 import json
+from functools import lru_cache
 from typing import Any
 
 from mcp.server import Server
@@ -12,7 +14,9 @@ from google_gmail_mcp.service import GmailService
 app = Server("google-gmail-mcp")
 
 
+@lru_cache(maxsize=1)
 def _svc() -> GmailService:
+    """One service per process: config is read once and Google clients are reused."""
     return GmailService.from_config()
 
 
@@ -20,7 +24,7 @@ def _svc() -> GmailService:
 async def list_tools() -> list[Tool]:
     return [
         Tool(
-            name="gmail.search_messages",
+            name="gmail_search_messages",
             description="Search Gmail messages by query string.",
             inputSchema={
                 "type": "object",
@@ -33,7 +37,7 @@ async def list_tools() -> list[Tool]:
             },
         ),
         Tool(
-            name="gmail.read_message",
+            name="gmail_read_message",
             description="Read a Gmail message by ID.",
             inputSchema={
                 "type": "object",
@@ -45,8 +49,8 @@ async def list_tools() -> list[Tool]:
             },
         ),
         Tool(
-            name="gmail.send_email",
-            description="Send an email.",
+            name="gmail_send_email",
+            description="Send an email (requires confirm=true).",
             inputSchema={
                 "type": "object",
                 "properties": {
@@ -56,12 +60,13 @@ async def list_tools() -> list[Tool]:
                     "cc": {"type": "string", "description": "CC email addresses."},
                     "bcc": {"type": "string", "description": "BCC email addresses."},
                     "html": {"type": "boolean", "description": "Send as HTML.", "default": False},
+                    "confirm": {"type": "boolean", "description": "Must be true to execute.", "default": False},
                 },
-                "required": ["to", "subject", "body"],
+                "required": ["to", "subject", "body", "confirm"],
             },
         ),
         Tool(
-            name="gmail.create_draft",
+            name="gmail_create_draft",
             description="Create a draft email.",
             inputSchema={
                 "type": "object",
@@ -76,20 +81,21 @@ async def list_tools() -> list[Tool]:
             },
         ),
         Tool(
-            name="gmail.reply_to_message",
-            description="Reply to an email message.",
+            name="gmail_reply_to_message",
+            description="Reply to an email message (requires confirm=true).",
             inputSchema={
                 "type": "object",
                 "properties": {
                     "message_id": {"type": "string", "description": "Message ID to reply to."},
                     "body": {"type": "string", "description": "Reply body."},
                     "html": {"type": "boolean", "description": "Reply as HTML.", "default": False},
+                    "confirm": {"type": "boolean", "description": "Must be true to execute.", "default": False},
                 },
-                "required": ["message_id", "body"],
+                "required": ["message_id", "body", "confirm"],
             },
         ),
         Tool(
-            name="gmail.modify_labels",
+            name="gmail_modify_labels",
             description="Add or remove labels from a message.",
             inputSchema={
                 "type": "object",
@@ -102,29 +108,31 @@ async def list_tools() -> list[Tool]:
             },
         ),
         Tool(
-            name="gmail.trash_message",
-            description="Move a message to trash.",
+            name="gmail_trash_message",
+            description="Move a message to trash (requires confirm=true).",
             inputSchema={
                 "type": "object",
                 "properties": {
                     "message_id": {"type": "string", "description": "Message ID to trash."},
+                    "confirm": {"type": "boolean", "description": "Must be true to execute.", "default": False},
                 },
-                "required": ["message_id"],
+                "required": ["message_id", "confirm"],
             },
         ),
         Tool(
-            name="gmail.delete_message",
-            description="Permanently delete a message.",
+            name="gmail_delete_message",
+            description="Permanently delete a message (requires confirm=true).",
             inputSchema={
                 "type": "object",
                 "properties": {
                     "message_id": {"type": "string", "description": "Message ID to delete."},
+                    "confirm": {"type": "boolean", "description": "Must be true to execute.", "default": False},
                 },
-                "required": ["message_id"],
+                "required": ["message_id", "confirm"],
             },
         ),
         Tool(
-            name="gmail.mark_as_read",
+            name="gmail_mark_as_read",
             description="Mark a message as read.",
             inputSchema={
                 "type": "object",
@@ -135,7 +143,7 @@ async def list_tools() -> list[Tool]:
             },
         ),
         Tool(
-            name="gmail.mark_as_unread",
+            name="gmail_mark_as_unread",
             description="Mark a message as unread.",
             inputSchema={
                 "type": "object",
@@ -146,7 +154,7 @@ async def list_tools() -> list[Tool]:
             },
         ),
         Tool(
-            name="gmail.list_labels",
+            name="gmail_list_labels",
             description="List all Gmail labels.",
             inputSchema={
                 "type": "object",
@@ -154,7 +162,7 @@ async def list_tools() -> list[Tool]:
             },
         ),
         Tool(
-            name="gmail.create_label",
+            name="gmail_create_label",
             description="Create a new Gmail label.",
             inputSchema={
                 "type": "object",
@@ -173,26 +181,24 @@ async def list_tools() -> list[Tool]:
 async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent]:
     svc = _svc()
     handlers = {
-        "gmail.search_messages": svc.search_messages,
-        "gmail.read_message": svc.read_message,
-        "gmail.send_email": svc.send_email,
-        "gmail.create_draft": svc.create_draft,
-        "gmail.reply_to_message": svc.reply_to_message,
-        "gmail.modify_labels": svc.modify_labels,
-        "gmail.trash_message": svc.trash_message,
-        "gmail.delete_message": svc.delete_message,
-        "gmail.mark_as_read": svc.mark_as_read,
-        "gmail.mark_as_unread": svc.mark_as_unread,
-        "gmail.list_labels": svc.list_labels,
-        "gmail.create_label": svc.create_label,
+        "gmail_search_messages": svc.search_messages,
+        "gmail_read_message": svc.read_message,
+        "gmail_send_email": svc.send_email,
+        "gmail_create_draft": svc.create_draft,
+        "gmail_reply_to_message": svc.reply_to_message,
+        "gmail_modify_labels": svc.modify_labels,
+        "gmail_trash_message": svc.trash_message,
+        "gmail_delete_message": svc.delete_message,
+        "gmail_mark_as_read": svc.mark_as_read,
+        "gmail_mark_as_unread": svc.mark_as_unread,
+        "gmail_list_labels": svc.list_labels,
+        "gmail_create_label": svc.create_label,
     }
     if name not in handlers:
-        return [TextContent(type="text", text=f"Unknown tool: {name}")]
-    try:
-        result = handlers[name](**arguments)
-        return [TextContent(type="text", text=json.dumps(result, indent=2, default=str))]
-    except Exception as exc:
-        return [TextContent(type="text", text=f"Error: {exc}")]
+        raise ValueError(f"Unknown tool: {name}")
+    # Errors are not caught here: the MCP server turns any exception into an isError result.
+    result = handlers[name](**arguments)
+    return [TextContent(type="text", text=json.dumps(result, indent=2, default=str))]
 
 
 async def main() -> None:
@@ -200,6 +206,10 @@ async def main() -> None:
         await app.run(read_stream, write_stream, app.create_initialization_options())
 
 
-if __name__ == "__main__":
-    import asyncio
+def run() -> None:
+    """Console-script entry point."""
     asyncio.run(main())
+
+
+if __name__ == "__main__":
+    run()

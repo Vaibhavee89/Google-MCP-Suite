@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import asyncio
 import json
+from functools import lru_cache
 from typing import Any
 
 from mcp.server import Server
@@ -12,7 +14,9 @@ from google_calendar_mcp.service import CalendarService
 app = Server("google-calendar-mcp")
 
 
+@lru_cache(maxsize=1)
 def _svc() -> CalendarService:
+    """One service per process: config is read once and Google clients are reused."""
     return CalendarService.from_config()
 
 
@@ -20,7 +24,7 @@ def _svc() -> CalendarService:
 async def list_tools() -> list[Tool]:
     return [
         Tool(
-            name="calendar.search_events",
+            name="calendar_search_events",
             description="Search Calendar events with optional query/time filters.",
             inputSchema={
                 "type": "object",
@@ -35,7 +39,7 @@ async def list_tools() -> list[Tool]:
             },
         ),
         Tool(
-            name="calendar.get_event",
+            name="calendar_get_event",
             description="Get a Calendar event by ID.",
             inputSchema={
                 "type": "object",
@@ -47,7 +51,7 @@ async def list_tools() -> list[Tool]:
             },
         ),
         Tool(
-            name="calendar.create_event",
+            name="calendar_create_event",
             description="Create a new calendar event.",
             inputSchema={
                 "type": "object",
@@ -69,7 +73,7 @@ async def list_tools() -> list[Tool]:
             },
         ),
         Tool(
-            name="calendar.update_event",
+            name="calendar_update_event",
             description="Update an existing calendar event.",
             inputSchema={
                 "type": "object",
@@ -91,19 +95,20 @@ async def list_tools() -> list[Tool]:
             },
         ),
         Tool(
-            name="calendar.delete_event",
-            description="Delete a calendar event.",
+            name="calendar_delete_event",
+            description="Delete a calendar event (requires confirm=true).",
             inputSchema={
                 "type": "object",
                 "properties": {
                     "event_id": {"type": "string", "description": "Event ID to delete."},
                     "calendar_id": {"type": "string", "description": "Calendar ID.", "default": "primary"},
+                    "confirm": {"type": "boolean", "description": "Must be true to execute.", "default": False},
                 },
-                "required": ["event_id"],
+                "required": ["event_id", "confirm"],
             },
         ),
         Tool(
-            name="calendar.list_calendars",
+            name="calendar_list_calendars",
             description="List all calendars.",
             inputSchema={
                 "type": "object",
@@ -111,7 +116,7 @@ async def list_tools() -> list[Tool]:
             },
         ),
         Tool(
-            name="calendar.create_calendar",
+            name="calendar_create_calendar",
             description="Create a new calendar.",
             inputSchema={
                 "type": "object",
@@ -124,20 +129,21 @@ async def list_tools() -> list[Tool]:
             },
         ),
         Tool(
-            name="calendar.add_attendees",
-            description="Add attendees to an event.",
+            name="calendar_add_attendees",
+            description="Add attendees to an event (requires confirm=true).",
             inputSchema={
                 "type": "object",
                 "properties": {
                     "event_id": {"type": "string", "description": "Event ID."},
                     "attendees": {"type": "array", "items": {"type": "string"}, "description": "Attendee emails."},
                     "calendar_id": {"type": "string", "description": "Calendar ID.", "default": "primary"},
+                    "confirm": {"type": "boolean", "description": "Must be true to execute.", "default": False},
                 },
-                "required": ["event_id", "attendees"],
+                "required": ["event_id", "attendees", "confirm"],
             },
         ),
         Tool(
-            name="calendar.quick_add_event",
+            name="calendar_quick_add_event",
             description="Quick add event using natural language.",
             inputSchema={
                 "type": "object",
@@ -149,7 +155,7 @@ async def list_tools() -> list[Tool]:
             },
         ),
         Tool(
-            name="calendar.check_freebusy",
+            name="calendar_check_freebusy",
             description="Check free/busy information for calendars to see availability.",
             inputSchema={
                 "type": "object",
@@ -173,24 +179,22 @@ async def list_tools() -> list[Tool]:
 async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent]:
     svc = _svc()
     handlers = {
-        "calendar.search_events": svc.search_events,
-        "calendar.get_event": svc.get_event,
-        "calendar.create_event": svc.create_event,
-        "calendar.update_event": svc.update_event,
-        "calendar.delete_event": svc.delete_event,
-        "calendar.list_calendars": svc.list_calendars,
-        "calendar.create_calendar": svc.create_calendar,
-        "calendar.add_attendees": svc.add_attendees,
-        "calendar.quick_add_event": svc.quick_add_event,
-        "calendar.check_freebusy": svc.check_freebusy,
+        "calendar_search_events": svc.search_events,
+        "calendar_get_event": svc.get_event,
+        "calendar_create_event": svc.create_event,
+        "calendar_update_event": svc.update_event,
+        "calendar_delete_event": svc.delete_event,
+        "calendar_list_calendars": svc.list_calendars,
+        "calendar_create_calendar": svc.create_calendar,
+        "calendar_add_attendees": svc.add_attendees,
+        "calendar_quick_add_event": svc.quick_add_event,
+        "calendar_check_freebusy": svc.check_freebusy,
     }
     if name not in handlers:
-        return [TextContent(type="text", text=f"Unknown tool: {name}")]
-    try:
-        result = handlers[name](**arguments)
-        return [TextContent(type="text", text=json.dumps(result, indent=2, default=str))]
-    except Exception as exc:
-        return [TextContent(type="text", text=f"Error: {exc}")]
+        raise ValueError(f"Unknown tool: {name}")
+    # Errors are not caught here: the MCP server turns any exception into an isError result.
+    result = handlers[name](**arguments)
+    return [TextContent(type="text", text=json.dumps(result, indent=2, default=str))]
 
 
 async def main() -> None:
@@ -198,6 +202,10 @@ async def main() -> None:
         await app.run(read_stream, write_stream, app.create_initialization_options())
 
 
-if __name__ == "__main__":
-    import asyncio
+def run() -> None:
+    """Console-script entry point."""
     asyncio.run(main())
+
+
+if __name__ == "__main__":
+    run()

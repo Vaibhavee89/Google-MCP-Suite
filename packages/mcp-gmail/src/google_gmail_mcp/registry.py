@@ -7,12 +7,12 @@ from google_gmail_mcp.service import GmailService
 
 TOOL_DEFINITIONS: list[Dict[str, Any]] = [
     {
-        "name": "gmail.search_messages",
+        "name": "gmail_search_messages",
         "description": "Search Gmail messages by query string.",
         "parameters": {"query": "string", "limit": "int", "page_token": "string"},
     },
     {
-        "name": "gmail.read_message",
+        "name": "gmail_read_message",
         "description": "Read a Gmail message by id.",
         "parameters": {"message_id": "string", "format": "string"},
     },
@@ -26,8 +26,8 @@ def list_tools() -> list[Dict[str, Any]]:
 def call_tool(name: str, **kwargs: Any) -> Dict[str, Any]:
     service = GmailService.from_config()
     handlers = {
-        "gmail.search_messages": service.search_messages,
-        "gmail.read_message": service.read_message,
+        "gmail_search_messages": service.search_messages,
+        "gmail_read_message": service.read_message,
     }
     if name not in handlers:
         raise ValueError(f"Unknown tool: {name}")

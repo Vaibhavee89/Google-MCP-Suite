@@ -8,6 +8,7 @@ from google_mcp_core.client_factory import GoogleClientFactory
 from google_mcp_core.config import AppConfig, load_config
 from google_mcp_core.errors import normalize_google_error
 from google_mcp_core.retry import execute_with_retry
+from google_mcp_core.safety import require_confirmation
 
 
 READONLY_SCOPES = ["https://www.googleapis.com/auth/documents.readonly"]
@@ -64,8 +65,9 @@ class DocsService:
         except Exception as exc:
             raise normalize_google_error(exc)
 
-    def create_document(self, title: str) -> Dict[str, Any]:
-        """Create a new Google Doc."""
+    def create_document(self, title: str, confirm: bool = False) -> Dict[str, Any]:
+        """Create a new Google Doc. Requires confirm=True."""
+        require_confirmation("docs_create_document", confirm)
         scopes = self._resolve_scopes(WRITE_SCOPES)
         client = self._docs_client(scopes)
         try:
@@ -80,8 +82,9 @@ class DocsService:
         except Exception as exc:
             raise normalize_google_error(exc)
 
-    def insert_text(self, document_id: str, text: str, index: int = 1) -> Dict[str, Any]:
-        """Insert text at a specific position in the document."""
+    def insert_text(self, document_id: str, text: str, index: int = 1, confirm: bool = False) -> Dict[str, Any]:
+        """Insert text at a specific position in the document. Requires confirm=True."""
+        require_confirmation("docs_insert_text", confirm)
         scopes = self._resolve_scopes(WRITE_SCOPES)
         client = self._docs_client(scopes)
         try:
@@ -101,8 +104,9 @@ class DocsService:
         except Exception as exc:
             raise normalize_google_error(exc)
 
-    def delete_text(self, document_id: str, start_index: int, end_index: int) -> Dict[str, Any]:
-        """Delete text from a document."""
+    def delete_text(self, document_id: str, start_index: int, end_index: int, confirm: bool = False) -> Dict[str, Any]:
+        """Delete text from a document. Requires confirm=True."""
+        require_confirmation("docs_delete_text", confirm, destructive=True)
         scopes = self._resolve_scopes(WRITE_SCOPES)
         client = self._docs_client(scopes)
         try:
@@ -124,8 +128,9 @@ class DocsService:
         except Exception as exc:
             raise normalize_google_error(exc)
 
-    def replace_text(self, document_id: str, old_text: str, new_text: str) -> Dict[str, Any]:
-        """Replace all occurrences of text in a document."""
+    def replace_text(self, document_id: str, old_text: str, new_text: str, confirm: bool = False) -> Dict[str, Any]:
+        """Replace all occurrences of text in a document. Requires confirm=True."""
+        require_confirmation("docs_replace_text", confirm)
         scopes = self._resolve_scopes(WRITE_SCOPES)
         client = self._docs_client(scopes)
         try:
@@ -150,8 +155,9 @@ class DocsService:
         except Exception as exc:
             raise normalize_google_error(exc)
 
-    def append_text(self, document_id: str, text: str) -> Dict[str, Any]:
-        """Append text to the end of a document."""
+    def append_text(self, document_id: str, text: str, confirm: bool = False) -> Dict[str, Any]:
+        """Append text to the end of a document. Requires confirm=True."""
+        require_confirmation("docs_append_text", confirm)
         scopes = self._resolve_scopes(WRITE_SCOPES)
         client = self._docs_client(scopes)
         try:
@@ -183,9 +189,11 @@ class DocsService:
         bold: Optional[bool] = None,
         italic: Optional[bool] = None,
         underline: Optional[bool] = None,
-        font_size: Optional[int] = None
+        font_size: Optional[int] = None,
+        confirm: bool = False,
     ) -> Dict[str, Any]:
-        """Format text in a document."""
+        """Format text in a document. Requires confirm=True."""
+        require_confirmation("docs_format_text", confirm)
         scopes = self._resolve_scopes(WRITE_SCOPES)
         client = self._docs_client(scopes)
         try:
@@ -225,8 +233,9 @@ class DocsService:
         except Exception as exc:
             raise normalize_google_error(exc)
 
-    def insert_image(self, document_id: str, image_url: str, index: int = 1) -> Dict[str, Any]:
-        """Insert an image into a document."""
+    def insert_image(self, document_id: str, image_url: str, index: int = 1, confirm: bool = False) -> Dict[str, Any]:
+        """Insert an image into a document. Requires confirm=True."""
+        require_confirmation("docs_insert_image", confirm)
         scopes = self._resolve_scopes(WRITE_SCOPES)
         client = self._docs_client(scopes)
         try:
